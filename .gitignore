@@ -23,3 +23,8 @@ env/
 # OS
 .DS_Store
 Thumbs.db
+
+# testici
+create_tables.py
+seed_data.py
+
