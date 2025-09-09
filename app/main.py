@@ -6,6 +6,8 @@ from fastapi import Depends
 from sqlalchemy.orm import Session
 from app.database import get_db
 from app.models import Vacancy
+from app.services.hh_api import fetch_vacancies
+from app.crud.vacancy import create_vacancy
 
 app = FastAPI(title="Job Aggregator API", version="0.1.0")
 
@@ -35,3 +37,20 @@ def get_vacancies(db: Session = Depends(get_db)):
         }
         for v in vacancies
     ]
+
+@app.post("/load_vacancies")
+def load_vacancies(keyword: str, area: int = 1002, db: Session = Depends(get_db)):
+        items = fetch_vacancies(keyword, area)
+        saved = []
+        for item in items:
+            saved.append(
+                create_vacancy(
+                    db,
+                    title=item["name"],
+                    company=item["employer"]["name"] if item.get("employer") else "N/A",
+                    location=item["area"]["name"] if item.get("area") else "N/A",
+                    url=item["alternate_url"]
+                )
+            )
+        return {"saved_count": len(saved)}
+    
