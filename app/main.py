@@ -12,6 +12,7 @@ from typing import Optional
 from fastapi import Query
 from app.scheduler import start_scheduler
 from contextlib import asynccontextmanager
+from app.routes import vacancies
 
 
 @asynccontextmanager
@@ -22,6 +23,10 @@ async def lifespan(app: FastAPI):
 
 
 app = FastAPI(title="Job Aggregator API", version="0.1.0", lifespan=lifespan)
+
+app.include_router(vacancies.router, prefix="/vacancies", tags=["Vacancies"])
+
+
 
 @app.get("/ping")
 def ping():
