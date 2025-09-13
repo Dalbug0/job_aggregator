@@ -8,6 +8,8 @@ class Settings(BaseSettings):
     POSTGRES_PORT: int = 5432
     POSTGRES_HOST: str = "localhost"  # если FastAPI будет в Docker, поменяем на "db"
 
+    log_level: str = "INFO"
+
     @property
     def database_url(self) -> str:
         return (

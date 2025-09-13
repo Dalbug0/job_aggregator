@@ -14,3 +14,4 @@ def list_vacancies(skip: int = 0, limit: int = 10, db: Session = Depends(get_db)
 @router.post("/", response_model=VacancyRead)
 def add_vacancy(vacancy: VacancyCreate, db: Session = Depends(get_db)):
     return create_vacancy(db, vacancy)
+

@@ -13,11 +13,19 @@ from fastapi import Query
 from app.scheduler import start_scheduler
 from contextlib import asynccontextmanager
 from app.routes import vacancies
+from app.logger import logger
+from fastapi.exceptions import RequestValidationError
+from fastapi import HTTPException
+from app.exceptions import http_exception_handler, generic_exception_handler
+
+
+
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     start_scheduler()
+    logger.info("Job Aggregator API started")
     yield
     print("Prilogenie ostanovleno")
 
@@ -25,7 +33,8 @@ async def lifespan(app: FastAPI):
 app = FastAPI(title="Job Aggregator API", version="0.1.0", lifespan=lifespan)
 
 app.include_router(vacancies.router, prefix="/vacancies", tags=["Vacancies"])
-
+app.add_exception_handler(HTTPException, http_exception_handler)
+app.add_exception_handler(Exception, generic_exception_handler)
 
 
 @app.get("/ping")
@@ -41,58 +50,5 @@ def health_db():
         # В проде логируй ошибку подробнее
         return JSONResponse(status_code=503, content={"db": "unavailable", "detail": str(e)})
 
-@app.get("/vacancies")
-def get_vacancies(
-    db: Session = Depends(get_db),
-    company: Optional[str] = None,
-    location: Optional[str] = None,
-    keyword: Optional[str] = None,
-    sort_by: str = Query("created_at", regex="(?i)^(created_at|title)$"),
-    order: str = Query("desc", regex="^(asc|desc)$"),
-    limit: int = Query(10, ge=1, le=100),
-    offset: int = Query(0, ge=0)
-):
-    query = db.query(Vacancy)
 
-    if company:
-        query = query.filter(Vacancy.company.ilike(f"%{company}%"))
-    if location:
-        query = query.filter(Vacancy.location.ilike(f"%{location}%"))
-    if keyword:
-        query = query.filter(Vacancy.title.ilike(f"%{keyword}%"))
-
-    sort_column = getattr(Vacancy, sort_by)
-    if order == "desc":
-        sort_column = sort_column.desc()
-
-    vacancies = query.order_by(sort_column).limit(limit).offset(offset).all()
-
-    return [
-        {
-            "id": v.id,
-            "title": v.title,
-            "company": v.company,
-            "location": v.location,
-            "url": v.url,
-            "created_at": v.created_at
-        }
-        for v in vacancies
-    ]
-
-
-@app.post("/load_vacancies")
-def load_vacancies(keyword: str, area: int = 1002, db: Session = Depends(get_db)):
-        items = fetch_vacancies(keyword, area)
-        saved = []
-        for item in items:
-            saved.append(
-                create_vacancy(
-                    db,
-                    title=item["name"],
-                    company=item["employer"]["name"] if item.get("employer") else "N/A",
-                    location=item["area"]["name"] if item.get("area") else "N/A",
-                    url=item["alternate_url"]
-                )
-            )
-        return {"saved_count": len(saved)}
     
