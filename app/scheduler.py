@@ -6,7 +6,7 @@ from app.database import SessionLocal
 def job_fetch_vacancies():
     db = SessionLocal()
     try:
-        items = fetch_vacancies("CSS", area=1002)
+        items = fetch_vacancies("Python", area=1002)
         for item in items:
             create_vacancy(
                 db,

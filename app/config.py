@@ -6,7 +6,7 @@ class Settings(BaseSettings):
     POSTGRES_PASSWORD: str = "jobpass"
     POSTGRES_DB: str = "job_aggregator"
     POSTGRES_PORT: int = 5432
-    POSTGRES_HOST: str = "localhost"  # если FastAPI будет в Docker, поменяем на "db"
+    POSTGRES_HOST: str = "db" 
 
     log_level: str = "INFO"
 
