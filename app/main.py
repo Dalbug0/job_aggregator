@@ -2,6 +2,7 @@
 from fastapi import FastAPI
 from fastapi.responses import JSONResponse
 from app.database import check_connection
+from app.database import Base, engine
 from fastapi import Depends
 from sqlalchemy.orm import Session
 from app.database import get_db
@@ -21,13 +22,18 @@ from app.exceptions import http_exception_handler, generic_exception_handler
 
 
 
-
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    start_scheduler()
     logger.info("Job Aggregator API started")
+
+    logger.info("🔄 Проверка и создание таблиц...")
+    Base.metadata.create_all(bind=engine)
+    logger.info("✅ Таблицы готовы")
+
+    start_scheduler()
+
     yield
-    print("Prilogenie ostanovleno")
+    print("Приложение остановленно.")
 
 
 app = FastAPI(title="Job Aggregator API", version="0.1.0", lifespan=lifespan)

@@ -14,8 +14,20 @@ services:
     healthcheck:
       test: [ "CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}" ]
       interval: 5s
-      timeout: 3s
       retries: 5
+      start_period: 10s
+      timeout: 3s
+
+  api:
+    build: .
+    container_name: job_api
+    restart: unless-stopped
+    env_file: .env.dev
+    ports:
+      - "8000:8000"
+    depends_on:
+      db:
+        condition: service_healthy
 
 volumes:
   postgres_data:
