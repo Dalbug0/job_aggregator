@@ -11,13 +11,15 @@ from app.services.hh_api import fetch_vacancies
 from app.crud.vacancy import create_vacancy
 from typing import Optional
 from fastapi import Query
-from app.scheduler import start_scheduler
+from app.scheduler import start_scheduler, fin_scheduler
 from contextlib import asynccontextmanager
 from app.routes import vacancies
 from app.logger import logger
 from fastapi.exceptions import RequestValidationError
 from fastapi import HTTPException
 from app.exceptions import http_exception_handler, generic_exception_handler
+
+
 
 
 
@@ -29,10 +31,12 @@ async def lifespan(app: FastAPI):
     logger.info("🔄 Проверка и создание таблиц...")
     Base.metadata.create_all(bind=engine)
     logger.info("✅ Таблицы готовы")
+    
 
     start_scheduler()
 
     yield
+    fin_scheduler();
     print("Приложение остановленно.")
 
 
