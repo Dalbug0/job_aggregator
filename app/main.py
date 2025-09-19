@@ -28,9 +28,7 @@ from app.exceptions import http_exception_handler, generic_exception_handler
 async def lifespan(app: FastAPI):
     logger.info("Job Aggregator API started")
 
-    logger.info("🔄 Проверка и создание таблиц...")
-    Base.metadata.create_all(bind=engine)
-    logger.info("✅ Таблицы готовы")
+    logger.info("✅ Приложение готово")
     
 
     start_scheduler()

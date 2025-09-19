@@ -28,3 +28,7 @@ Thumbs.db
 create_tables.py
 seed_data.py
 
+# Временные
+НеЗабудь.txt
+.gitlab-ci.yml
+.github

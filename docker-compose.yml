@@ -28,6 +28,9 @@ services:
     depends_on:
       db:
         condition: service_healthy
+    volumes:
+      - ./migrations:/app/migrations
+      - .:/app
 
 volumes:
   postgres_data:
