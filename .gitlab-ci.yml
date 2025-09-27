@@ -1,0 +1,32 @@
+default:
+  image: python:3.11
+  services:
+    - name: postgres:15
+      alias: db
+  variables:
+    POSTGRES_DB: job_db
+    POSTGRES_USER: postgres
+    POSTGRES_PASSWORD: postgres
+    DATABASE_URL: postgresql+psycopg2://postgres:postgres@db:5432/job_db
+  before_script:
+    - pip install -r requirements.txt
+
+stages:
+  - test
+
+cache:
+  paths:
+    - .cache/pip
+
+alembic-check:
+  stage: test
+  script:
+    - alembic check
+
+pytest:
+  stage: test
+  needs: ["alembic-check"]
+  script:
+    - pytest -v
+
+
