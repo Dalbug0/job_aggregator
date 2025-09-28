@@ -1,17 +1,13 @@
 import pytest
-from fastapi.testclient import TestClient
-import requests
 from app.services.hh_api import fetch_vacancies  
 from app.main import app
 
-def test_health_check():
-    client = TestClient(app)
+def test_health_check(client):
     response = client.get("/health")
     assert response.status_code == 200
     assert response.json() == {"status": "ok"}
 
-def test_health_db():
-    client = TestClient(app)
+def test_health_db(client):
     response = client.get("/health/db")
     assert response.status_code in (200, 503)  
     if response.status_code == 200:
@@ -20,14 +16,12 @@ def test_health_db():
         assert response.json()["db"] == "unavailable"
 
 
-def test_get_vacancies_empty():
-    client = TestClient(app)
+def test_get_vacancies_empty(client):
     response = client.get("/vacancies")
     assert response.status_code == 200
     assert response.json() == []
 
-def test_post_vacancy():
-    client = TestClient(app)
+def test_post_vacancy(client):
     vacancy_data = {
         "title": "Python Developer",
         "company": "Test Company",
