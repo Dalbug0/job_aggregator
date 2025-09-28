@@ -14,8 +14,9 @@ htmlcov/
 .tox/
 .nox/
 
-# VS Code
+# IDE
 .vscode/
+.cursor/
 
 # Envs
 .env
