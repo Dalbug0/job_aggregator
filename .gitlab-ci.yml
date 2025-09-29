@@ -24,9 +24,13 @@ alembic-check:
     - alembic check
 
 pytest:
-  stage: test
-  needs: ["alembic-check"]
-  script:
-    - pytest -v
-
+   stage: test
+   needs: ["alembic-check"]
+   script:
+     - pytest --cov=app --cov-report=xml
+   artifacts:
+     reports:
+       coverage_report:
+         coverage_format: cobertura
+         path: coverage.xml
 

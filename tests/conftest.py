@@ -10,7 +10,6 @@ import subprocess
 import time
 import os
 
-# Проверяем доступность тестовой базы данных
 def is_test_db_available():
     """Проверяет, доступна ли тестовая база данных"""
     try:
@@ -22,24 +21,18 @@ def is_test_db_available():
     except Exception:
         return False
 
-# Создаем тестовую PostgreSQL базу данных
 @pytest.fixture(scope="session")
 def test_db():
     """Фикстура для тестовой PostgreSQL базы данных"""
     
-    # Проверяем доступность базы данных
     if not is_test_db_available():
         pytest.skip("Тестовая база данных PostgreSQL недоступна. Запустите: docker-compose -f docker-compose.test.yml up -d")
     
-    # Создаем движок PostgreSQL
     engine = create_engine(test_settings.database_url, pool_pre_ping=True)
-    
-    # Создаем все таблицы
     Base.metadata.create_all(bind=engine)
     
     yield engine
-    
-    # Очищаем таблицы после тестов
+
     Base.metadata.drop_all(bind=engine)
 
 @pytest.fixture(scope="function")

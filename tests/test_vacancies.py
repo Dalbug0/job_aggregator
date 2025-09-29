@@ -61,7 +61,7 @@ async def test_fetch_vacancies_hh_api(monkeypatch):
 
     monkeypatch.setattr("app.services.hh_api.requests.get", fake_get)
     
-    # Тестируем функцию напрямую
+
     result = fetch_vacancies("python")
     assert len(result) == 2
     assert result[0]["name"] == "Python Developer"
