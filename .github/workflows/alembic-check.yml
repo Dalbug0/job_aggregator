@@ -36,9 +36,17 @@ jobs:
         run: |
           pip install -r requirements.txt
 
+      - name: Run Alembic upgrade
+        env:
+          DATABASE_URL: postgresql+psycopg2://postgres:postgres@localhost:5432/job_db
+          PYTHONPATH: ${{ github.workspace }}
+        run: |
+          alembic upgrade head
+
       - name: Run Alembic check
         env:
           DATABASE_URL: postgresql+psycopg2://postgres:postgres@localhost:5432/job_db
+          PYTHONPATH: ${{ github.workspace }}
         run: |
           alembic check
   test:
@@ -52,10 +60,32 @@ jobs:
           POSTGRES_DB: job_db
         ports:
           - 5432:5432
+      postgres_test:
+        image: postgres:15
+        env:
+          POSTGRES_USER: test_user
+          POSTGRES_PASSWORD: test_pass
+          POSTGRES_DB: job_aggregator_test
+        ports:
+          - 5433:5432
+        options: >-
+          --health-cmd="pg_isready -U test_user -d job_aggregator_test"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=5
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
           python-version: "3.11"
       - run: pip install -r requirements.txt
-      - run: pytest --cov=app --cov-report=term-missing
+      - name: Run tests
+        env:
+          PYTHONPATH: ${{ github.workspace }}
+          POSTGRES_USER: test_user
+          POSTGRES_PASSWORD: test_pass
+          POSTGRES_DB: job_aggregator_test
+          POSTGRES_HOST: localhost
+          POSTGRES_PORT: 5433
+          DISABLE_SCHEDULER: "1"
+        run: pytest --cov=app --cov-report=term-missing
