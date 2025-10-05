@@ -36,6 +36,13 @@ jobs:
         run: |
           pip install -r requirements.txt
 
+      - name: Run Alembic upgrade
+        env:
+          DATABASE_URL: postgresql+psycopg2://postgres:postgres@localhost:5432/job_db
+          PYTHONPATH: ${{ github.workspace }}
+        run: |
+          alembic upgrade head
+
       - name: Run Alembic check
         env:
           DATABASE_URL: postgresql+psycopg2://postgres:postgres@localhost:5432/job_db

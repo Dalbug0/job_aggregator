@@ -18,6 +18,7 @@ from app.logger import logger
 from fastapi.exceptions import RequestValidationError
 from fastapi import HTTPException
 from app.exceptions import http_exception_handler, generic_exception_handler
+import os
 
 
 
@@ -30,11 +31,12 @@ async def lifespan(app: FastAPI):
 
     logger.info("✅ Приложение готово")
     
-
-    start_scheduler()
+    if os.getenv("DISABLE_SCHEDULER") != "1":
+        start_scheduler()
 
     yield
-    fin_scheduler();
+    if os.getenv("DISABLE_SCHEDULER") != "1":
+        fin_scheduler();
     print("Приложение остановленно.")
 
 
