@@ -1,6 +1,5 @@
 import pytest
 from app.services.hh_api import fetch_vacancies  
-from app.main import app
 
 def test_health_check(client):
     response = client.get("/health")
@@ -38,6 +37,41 @@ def test_post_vacancy(client):
     assert data["location"] == "Moscow"
     assert "id" in data
     assert "created_at" in data
+
+def test_update_vacancy(client):
+    vacancy_data = {
+        "title": "Backend Dev", 
+        "company": "Test", 
+        "location": "Minsk",
+        "url": "https://example.com/job/1"
+    }
+    response = client.post("/vacancies/", json=vacancy_data)
+    vacancy_id = response.json()["id"]
+
+    update_data = {
+        "title": "Senior Backend Dev"
+    }
+    response = client.put(
+        f"/vacancies/{vacancy_id}", 
+        json=update_data
+    )
+    assert response.status_code == 200
+    assert response.json()["title"] == "Senior Backend Dev"
+
+def test_delete_vacancy(client):
+    vacancy_data = {
+        "title": "ToDelete", 
+        "company": "Test",
+        "location": "Minsk",
+        "url": "https://example.com/job/1"
+    }
+    response = client.post("/vacancies/", json=vacancy_data)
+    vacancy_id = response.json()["id"]
+
+    response = client.delete(f"/vacancies/{vacancy_id}")
+    assert response.status_code == 200
+    assert response.json() == {"ok": True}
+
 
 
 @pytest.mark.asyncio
