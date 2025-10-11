@@ -55,9 +55,18 @@ python -m pytest tests/ --cov=app --cov-report=html
 
 ## Структура тестов
 
-- `tests/conftest.py` - конфигурация pytest с фикстурами
+- `tests/conftest.py` - конфигурация pytest с фикстурами (client, test_db, test_session)
 - `tests/test_settings.py` - настройки для тестовой среды
-- `tests/test_vacancies.py` - тесты для API вакансий
+- `tests/test_vacancies.py` - тесты для API вакансий (CRUD операции)
+
+### Покрываемые тестами функции:
+- ✅ Создание вакансий (POST /vacancies)
+- ✅ Получение списка вакансий (GET /vacancies)
+- ✅ Обновление вакансий (PUT /vacancies/{id})
+- ✅ Удаление вакансий (DELETE /vacancies/{id})
+- ✅ Фильтрация и сортировка
+- ✅ Проверка здоровья системы (health checks)
+- ✅ Интеграция с HH API
 
 ## Производительность тестов
 
@@ -65,6 +74,7 @@ python -m pytest tests/ --cov=app --cov-report=html
 - **Время выполнения тестов**: ~6 секунд
 - **Количество тестов**: 15+ тестовых случаев
 - **Отчеты о покрытии**: генерируются в `htmlcov/`
+- **Тестируемые компоненты**: API endpoints, CRUD операции, схемы валидации, интеграции
 
 ## Добавление новых тестов
 
