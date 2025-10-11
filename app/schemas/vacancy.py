@@ -17,3 +17,14 @@ class VacancyRead(VacancyBase):
 
     class Config:
         from_attributes = True  # для работы с SQLAlchemy моделей
+
+
+class VacancyUpdate(BaseModel):
+    title: Optional[str] = None
+    company: Optional[str] = None
+    location: Optional[str] = None
+    url: Optional[HttpUrl] = None
+
+
+class VacancyDelete(BaseModel):
+    ok: bool

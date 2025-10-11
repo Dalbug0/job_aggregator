@@ -1,6 +1,7 @@
 from sqlalchemy.orm import Session
 from app.models import Vacancy
-from app.schemas.vacancy import VacancyCreate
+from app.schemas.vacancy import VacancyCreate, VacancyUpdate
+from fastapi import HTTPException
 
 def create_vacancy(db: Session, vacancy: VacancyCreate) -> Vacancy:
     # Приводим HttpUrl (Pydantic) к str, чтобы psycopg2/SQLAlchemy могли использовать его в SQL-запросах.
@@ -22,3 +23,42 @@ def create_vacancy(db: Session, vacancy: VacancyCreate) -> Vacancy:
 
 def get_vacancies(db: Session, skip: int = 0, limit: int = 10):
     return db.query(Vacancy).offset(skip).limit(limit).all()
+
+
+def list_vacancies(
+    db: Session,
+    sort_by: str,
+    company: str | None = None,
+    location: str | None = None,
+    skip: int = 0,
+    limit: int = 10,
+):
+    query = db.query(Vacancy)
+    if company:
+        query = query.filter(Vacancy.company.ilike(f"%{company}%"))
+    if location:
+        query = query.filter(Vacancy.location.ilike(f"%{location}%"))
+    if sort_by in ["created_at", "title", "company"]:
+        query = query.order_by(getattr(Vacancy, sort_by).desc())
+    return query.offset(skip).limit(limit).all()
+
+
+
+def update_vacancy(db: Session, vacancy_id: int, vacancy: VacancyUpdate):
+    db_vacancy = db.query(Vacancy).get(vacancy_id)
+    if not db_vacancy:
+        raise HTTPException(status_code=404, detail="Vacancy not found")
+    for key, value in vacancy.model_dump(exclude_unset=True).items():
+        setattr(db_vacancy, key, value)
+    db.commit()
+    db.refresh(db_vacancy)
+    return db_vacancy
+
+
+def delete_vacancy(db: Session, vacancy_id: int):
+    db_vacancy = db.query(Vacancy).get(vacancy_id)
+    if not db_vacancy:
+        raise HTTPException(status_code=404, detail="Vacancy not found")
+    db.delete(db_vacancy)
+    db.commit()
+    return {"ok": True}
