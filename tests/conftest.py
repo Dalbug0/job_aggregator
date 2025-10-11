@@ -11,7 +11,6 @@ import time
 import os
 
 def is_test_db_available():
-    """Проверяет, доступна ли тестовая база данных"""
     try:
         from sqlalchemy import text
         engine = create_engine(test_settings.database_url)
@@ -23,7 +22,6 @@ def is_test_db_available():
 
 @pytest.fixture(scope="session")
 def test_db():
-    """Фикстура для тестовой PostgreSQL базы данных"""
     
     if not is_test_db_available():
         pytest.skip("Тестовая база данных PostgreSQL недоступна. Запустите: docker-compose -f docker-compose.test.yml up -d")
