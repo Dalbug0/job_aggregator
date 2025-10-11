@@ -5,11 +5,12 @@ FastAPI приложение для агрегации вакансий с ра�
 ## Возможности
 
 - 🔍 Поиск вакансий через API HeadHunter
-- 📊 REST API для управления вакансиями
+- 📊 Полный CRUD API для управления вакансиями
+- 🔧 Фильтрация и сортировка вакансий
 - 🗄️ PostgreSQL база данных
 - 🐳 Docker контейнеризация
 - 📈 Автоматическое обновление данных
-- 🧪 Полное тестовое покрытие
+- 🧪 Полное тестовое покрытие (93%)
 
 ## Технологии
 
@@ -79,6 +80,19 @@ uvicorn app.main:app --reload
 - **Swagger UI**: http://localhost:8000/docs
 - **ReDoc**: http://localhost:8000/redoc
 
+### API Endpoints
+
+#### Вакансии
+- `GET /vacancies` - Получить список вакансий с фильтрацией
+  - Параметры: `company`, `location`, `skip`, `limit`, `sort_by`
+- `POST /vacancies` - Создать новую вакансию
+- `PUT /vacancies/{id}` - Обновить вакансию
+- `DELETE /vacancies/{id}` - Удалить вакансию
+
+#### Системные
+- `GET /health` - Проверка состояния приложения
+- `GET /health/db` - Проверка состояния базы данных
+
 ## Тестирование
 
 ### Быстрый старт
@@ -100,23 +114,27 @@ python scripts/test_runner.py coverage
 ```
 job_aggregator/
 ├── app/                    # Основное приложение
-│   ├── crud/              # CRUD операции
+│   ├── crud/              # CRUD операции (создание, чтение, обновление, удаление)
 │   ├── models/            # SQLAlchemy модели
-│   ├── routes/            # API маршруты
-│   ├── schemas/           # Pydantic схемы
-│   ├── services/          # Бизнес-логика
-│   ├── config.py          # Конфигурация
-│   ├── database.py        # Настройка БД
-│   └── main.py            # Точка входа
+│   ├── routes/            # API маршруты (REST endpoints)
+│   ├── schemas/           # Pydantic схемы (валидация данных)
+│   ├── services/          # Бизнес-логика (HH API интеграция)
+│   ├── config.py          # Конфигурация приложения
+│   ├── database.py        # Настройка БД и сессий
+│   ├── main.py            # Точка входа FastAPI
+│   ├── scheduler.py       # Планировщик задач
+│   └── exceptions.py      # Обработка ошибок
 ├── tests/                 # Тесты
-│   ├── conftest.py        # Конфигурация pytest
-│   ├── test_settings.py   # Настройки для тестов
-│   └── test_vacancies.py  # Тесты API
+│   ├── conftest.py        # Конфигурация pytest и фикстуры
+│   ├── test_settings.py   # Настройки для тестовой среды
+│   └── test_vacancies.py  # Тесты API (CRUD операции)
 ├── scripts/               # Вспомогательные скрипты
-├── migrations/           # Alembic миграции
+│   ├── test_runner.py     # Автоматизированный запуск тестов
+│   └── test_db.py         # Тестирование БД
+├── migrations/           # Alembic миграции БД
 ├── docker-compose.yml    # Основные сервисы
 ├── docker-compose.test.yml # Тестовая БД
-└── requirements.txt       # Зависимости
+└── requirements.txt       # Зависимости Python
 ```
 
 ## Конфигурация
