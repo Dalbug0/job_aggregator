@@ -25,6 +25,25 @@ def get_vacancies(db: Session, skip: int = 0, limit: int = 10):
     return db.query(Vacancy).offset(skip).limit(limit).all()
 
 
+def list_vacancies(
+    db: Session,
+    sort_by: str,
+    company: str | None = None,
+    location: str | None = None,
+    skip: int = 0,
+    limit: int = 10,
+):
+    query = db.query(Vacancy)
+    if company:
+        query = query.filter(Vacancy.company.ilike(f"%{company}%"))
+    if location:
+        query = query.filter(Vacancy.location.ilike(f"%{location}%"))
+    if sort_by in ["created_at", "title", "company"]:
+        query = query.order_by(getattr(Vacancy, sort_by).desc())
+    return query.offset(skip).limit(limit).all()
+
+
+
 def update_vacancy(db: Session, vacancy_id: int, vacancy: VacancyUpdate):
     db_vacancy = db.query(Vacancy).get(vacancy_id)
     if not db_vacancy:
