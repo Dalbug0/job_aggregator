@@ -79,7 +79,7 @@ if __name__ == "__main__":
         print("  python scripts/test_runner.py db-status       - проверить статус БД")
         print("  python scripts/test_runner.py db-start       - запустить тестовую БД")
         print("  python scripts/test_runner.py db-stop         - остановить тестовую БД")
-        print("  python scripts/test_runner.py full            - запустить БД и тесты")
+        print("  python scripts/test_runner.py full            - запустить БД, тесты и остановить БД")
         sys.exit(1)
     
     command = sys.argv[1].lower()
@@ -96,7 +96,11 @@ if __name__ == "__main__":
         stop_test_db()
     elif command == "full":
         if start_test_db():
-            run_tests()
+            try:
+                run_tests()
+            finally:
+                # Всегда останавливаем БД после тестов
+                stop_test_db()
     else:
         print(f"❌ Неизвестная команда: {command}")
         sys.exit(1)
