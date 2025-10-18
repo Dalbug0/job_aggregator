@@ -38,7 +38,7 @@ app = FastAPI(
 )
 
 
-app.include_router(vacancies.router, prefix="/vacancies", tags=["Vacancies"])
+app.include_router(vacancies.router)
 
 app.add_exception_handler(HTTPException, http_exception_handler)
 app.add_exception_handler(Exception, generic_exception_handler)
