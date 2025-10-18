@@ -7,11 +7,10 @@ from fastapi import FastAPI, HTTPException
 from fastapi.responses import JSONResponse
 
 from app.database import check_connection
-from app.exceptions import http_exception_handler, generic_exception_handler
+from app.exceptions import generic_exception_handler, http_exception_handler
 from app.logger import logger
 from app.routes import vacancies
 from app.scheduler import fin_scheduler, start_scheduler
-
 
 
 @asynccontextmanager
@@ -19,13 +18,13 @@ async def lifespan(app: FastAPI):
     logger.info("Job Aggregator API started")
 
     logger.info("✅ Приложение готово")
-    
+
     if os.getenv("DISABLE_SCHEDULER") != "1":
         start_scheduler()
 
     yield
     if os.getenv("DISABLE_SCHEDULER") != "1":
-        fin_scheduler();
+        fin_scheduler()
     print("Приложение остановленно.")
 
 
@@ -39,11 +38,7 @@ app = FastAPI(
 )
 
 
-app.include_router(
-    vacancies.router, 
-    prefix="/vacancies", 
-    tags=["Vacancies"]
-)
+app.include_router(vacancies.router, prefix="/vacancies", tags=["Vacancies"])
 
 app.add_exception_handler(HTTPException, http_exception_handler)
 app.add_exception_handler(Exception, generic_exception_handler)
@@ -53,16 +48,11 @@ app.add_exception_handler(Exception, generic_exception_handler)
 def health():
     return {"status": "ok"}
 
+
 @app.get("/health/db")
 def health_db():
     try:
         check_connection()
         return {"db": "ok"}
     except Exception as e:
-        return JSONResponse(
-            status_code=503, 
-            content={"db": "unavailable", "detail": str(e)}
-        )
-
-
-    
+        return JSONResponse(status_code=503, content={"db": "unavailable", "detail": str(e)})

@@ -1,7 +1,9 @@
+from fastapi import HTTPException
 from sqlalchemy.orm import Session
+
 from app.models import Vacancy
 from app.schemas.vacancy import VacancyCreate, VacancyUpdate
-from fastapi import HTTPException
+
 
 def create_vacancy(db: Session, vacancy: VacancyCreate) -> Vacancy:
     # Приводим HttpUrl (Pydantic) к str, чтобы psycopg2/SQLAlchemy могли использовать его в SQL-запросах.
@@ -41,7 +43,6 @@ def list_vacancies(
     if sort_by in ["created_at", "title", "company"]:
         query = query.order_by(getattr(Vacancy, sort_by).desc())
     return query.offset(skip).limit(limit).all()
-
 
 
 def update_vacancy(db: Session, vacancy_id: int, vacancy: VacancyUpdate):
