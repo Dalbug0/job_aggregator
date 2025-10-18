@@ -4,7 +4,7 @@ vacancy_example = {
     "title": "Backend Developer",
     "company": "TechCorp",
     "location": "Minsk",
-    "url": "https://jobs.techcorp.com/backend"
+    "url": "https://jobs.techcorp.com/backend",
 }
 
 vacancy_read_example = {
@@ -13,5 +13,5 @@ vacancy_read_example = {
     "company": "TechCorp",
     "location": "Minsk",
     "url": "https://jobs.techcorp.com/backend",
-    "created_at": "2025-10-18T20:30:00"
+    "created_at": "2025-10-18T20:30:00",
 }
