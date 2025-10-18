@@ -1,7 +1,7 @@
 from datetime import datetime
+from typing import Optional
 
 from pydantic import BaseModel, HttpUrl
-from typing import Optional
 
 from app.examples import vacancy
 
@@ -13,12 +13,12 @@ class VacancyBase(BaseModel):
     url: Optional[HttpUrl] = None
 
     class Config:
-        json_schema_extra = {
-            "example": vacancy.vacancy_example
-        }
+        json_schema_extra = {"example": vacancy.vacancy_example}
+
 
 class VacancyCreate(VacancyBase):
     pass
+
 
 class VacancyRead(VacancyBase):
     id: int
@@ -26,9 +26,7 @@ class VacancyRead(VacancyBase):
 
     class Config:
         from_attributes = True  # для работы с SQLAlchemy моделей
-        json_schema_extra = {
-            "example": vacancy.vacancy_read_example
-        }
+        json_schema_extra = {"example": vacancy.vacancy_read_example}
 
 
 class VacancyUpdate(BaseModel):
