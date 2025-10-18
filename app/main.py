@@ -1,27 +1,16 @@
 # app/main.py
-from fastapi import FastAPI
-from fastapi.responses import JSONResponse
-from app.database import check_connection
-from app.database import Base, engine
-from fastapi import Depends
-from sqlalchemy.orm import Session
-from app.database import get_db
-from app.models import Vacancy
-from app.services.hh_api import fetch_vacancies
-from app.crud.vacancy import create_vacancy
-from typing import Optional
-from fastapi import Query
-from app.scheduler import start_scheduler, fin_scheduler
-from contextlib import asynccontextmanager
-from app.routes import vacancies
-from app.logger import logger
-from fastapi.exceptions import RequestValidationError
-from fastapi import HTTPException
-from app.exceptions import http_exception_handler, generic_exception_handler
+
 import os
+from contextlib import asynccontextmanager
 
+from fastapi import FastAPI, HTTPException
+from fastapi.responses import JSONResponse
 
-
+from app.database import check_connection
+from app.exceptions import http_exception_handler, generic_exception_handler
+from app.logger import logger
+from app.routes import vacancies
+from app.scheduler import fin_scheduler, start_scheduler
 
 
 
@@ -40,9 +29,22 @@ async def lifespan(app: FastAPI):
     print("Приложение остановленно.")
 
 
-app = FastAPI(title="Job Aggregator API", version="0.1.0", lifespan=lifespan)
+app = FastAPI(
+    title="Vacancies API",
+    description="API для управления вакансиями и интеграции с внешними сервисами",
+    version="1.0.0",
+    openapi_url="/api/v1/openapi.json",
+    docs_url="/api/v1/docs",
+    redoc_url="/api/v1/redoc",
+)
 
-app.include_router(vacancies.router, prefix="/vacancies", tags=["Vacancies"])
+
+app.include_router(
+    vacancies.router, 
+    prefix="/vacancies", 
+    tags=["Vacancies"]
+)
+
 app.add_exception_handler(HTTPException, http_exception_handler)
 app.add_exception_handler(Exception, generic_exception_handler)
 
@@ -57,7 +59,10 @@ def health_db():
         check_connection()
         return {"db": "ok"}
     except Exception as e:
-        return JSONResponse(status_code=503, content={"db": "unavailable", "detail": str(e)})
+        return JSONResponse(
+            status_code=503, 
+            content={"db": "unavailable", "detail": str(e)}
+        )
 
 
     
