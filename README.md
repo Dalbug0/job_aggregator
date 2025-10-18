@@ -58,6 +58,9 @@ docker-compose up -d
 
 # Проверка статуса
 docker-compose ps
+
+# Остановка всех сервисов без удаления контейнеров
+docker-compose stop
 ```
 
 ### 4. Запуск локально
@@ -77,8 +80,9 @@ uvicorn app.main:app --reload
 
 После запуска приложения документация доступна по адресам:
 
-- **Swagger UI**: http://localhost:8000/docs
-- **ReDoc**: http://localhost:8000/redoc
+- **Swagger UI**: http://localhost:8000/api/v1/docs
+- **ReDoc**: http://localhost:8000/api/v1/redoc
+- **OpenAPI**: http://localhost:8000/openapi.json
 
 ### API Endpoints
 
