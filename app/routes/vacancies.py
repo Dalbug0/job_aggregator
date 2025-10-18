@@ -13,7 +13,7 @@ from app.crud.vacancy import (
 from app.database import get_db
 from app.schemas.vacancy import VacancyCreate, VacancyDelete, VacancyRead, VacancyUpdate
 
-router = APIRouter()
+router = APIRouter(prefix="/vacancies", tags=["Vacancies"])
 
 
 @router.get("/", response_model=List[VacancyRead])
