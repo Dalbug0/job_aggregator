@@ -5,3 +5,7 @@ target-version = ["py311"]
 [tool.isort]
 profile = "black"
 line_length = 79
+
+[tool.flake8]
+max-line-length = 79
+exclude = ["migrations", "__pycache__"]
