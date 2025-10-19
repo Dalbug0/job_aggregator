@@ -34,3 +34,17 @@ pytest:
          coverage_format: cobertura
          path: coverage.xml
 
+Check formatting:
+  stage: test
+  script:
+    - black --check app tests
+
+Check imports:
+  stage: test
+  script:
+    - isort --check-only app tests
+
+Lint with flake8:
+  stage: test
+  script:
+    - flake8 app tests
