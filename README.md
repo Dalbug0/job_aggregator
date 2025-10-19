@@ -138,6 +138,7 @@ job_aggregator/
 ├── migrations/           # Alembic миграции БД
 ├── docker-compose.yml    # Основные сервисы
 ├── docker-compose.test.yml # Тестовая БД
+├── .pre-commit-config.yaml # pre-commit хуки для автоматической проверки и форматирования кода
 └── requirements.txt       # Зависимости Python
 ```
 

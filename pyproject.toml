@@ -1,11 +1,53 @@
 [tool.black]
 line-length = 79
 target-version = ["py311"]
+exclude = [
+    ".venv",
+    "venv",
+    "__pycache__",
+    "migrations",
+    ".pytest_cache",
+    ".ruff_cache",
+    ".mypy_cache",
+    "htmlcov",
+]
 
 [tool.isort]
 profile = "black"
 line_length = 79
+skip = [
+    ".venv",
+    "venv",
+    "__pycache__",
+    "migrations",
+    ".pytest_cache",
+    ".ruff_cache",
+    ".mypy_cache",
+    "htmlcov",
+]
+
+[tool.ruff]
+fix = true
+exclude = [
+    ".venv",
+    "venv",
+    "__pycache__",
+    "migrations",
+    ".pytest_cache",
+    ".ruff_cache",
+    ".mypy_cache",
+    "htmlcov",
+]
 
 [tool.flake8]
 max-line-length = 79
-exclude = ["migrations", "__pycache__"]
+exclude = [
+    ".venv",
+    "venv",
+    "__pycache__",
+    "migrations",
+    ".pytest_cache",
+    ".ruff_cache",
+    ".mypy_cache",
+    "htmlcov",
+]
