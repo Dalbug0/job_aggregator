@@ -103,3 +103,21 @@ async def test_fetch_vacancies_hh_api(monkeypatch):
     assert len(result) == 2
     assert result[0]["name"] == "Python Developer"
     assert result[1]["name"] == "Backend Engineer"
+
+
+def test_filter_by_company(client):
+    client.post("/vacancies/", json={"title": "Dev", "company": "Alpha"})
+    client.post("/vacancies/", json={"title": "Dev", "company": "Beta"})
+
+    response = client.get("/vacancies/?company=Alpha")
+    assert response.status_code == 200
+    assert all(v["company"] == "Alpha" for v in response.json())
+
+
+def test_pagination(client):
+    for i in range(15):
+        client.post("/vacancies/", json={"title": f"Dev{i}", "company": "Test"})
+
+    response = client.get("/vacancies/?skip=5&limit=5")
+    assert response.status_code == 200
+    assert len(response.json()) == 5
