@@ -2,10 +2,8 @@
 """
 Скрипт для управления тестовой базой данных PostgreSQL
 """
-import os
 import subprocess
 import sys
-import time
 
 
 def start_test_db():
@@ -19,6 +17,8 @@ def start_test_db():
             text=True,
         )
         print("✅ Тестовая база данных запущена")
+        print("📊 Статус тестовой базы данных:")
+        print(result.stdout)
         print("📊 База данных доступна на localhost:5433")
         print("🔗 Подключение: postgresql://test_user:test_pass@localhost:5433/job_aggregator_test")
     except subprocess.CalledProcessError as e:
