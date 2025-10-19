@@ -29,7 +29,10 @@ def upgrade() -> None:
         sa.Column("location", sa.String(), nullable=True),
         sa.Column("url", sa.String(), nullable=True),
         sa.Column(
-            "created_at", sa.DateTime(timezone=True), server_default=sa.text("now()"), nullable=True
+            "created_at",
+            sa.DateTime(timezone=True),
+            server_default=sa.text("now()"),
+            nullable=True,
         ),
         sa.PrimaryKeyConstraint("id"),
     )

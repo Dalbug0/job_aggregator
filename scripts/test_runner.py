@@ -2,7 +2,6 @@
 """
 Скрипт для управления тестами Job Aggregator
 """
-import os
 import subprocess
 import sys
 
@@ -11,7 +10,7 @@ def run_tests():
     """Запускает все тесты"""
     print("🧪 Запуск тестов...")
     try:
-        result = subprocess.run([sys.executable, "-m", "pytest", "tests/", "-v"], check=True)
+        _ = subprocess.run([sys.executable, "-m", "pytest", "tests/", "-v"], check=True)
         print("✅ Все тесты прошли успешно!")
         return True
     except subprocess.CalledProcessError as e:
@@ -23,8 +22,15 @@ def run_tests_with_coverage():
     """Запускает тесты с покрытием кода"""
     print("🧪 Запуск тестов с покрытием кода...")
     try:
-        result = subprocess.run(
-            [sys.executable, "-m", "pytest", "tests/", "--cov=app", "--cov-report=term-missing"],
+        _ = subprocess.run(
+            [
+                sys.executable,
+                "-m",
+                "pytest",
+                "tests/",
+                "--cov=app",
+                "--cov-report=term-missing",
+            ],
             check=True,
         )
         print("✅ Тесты с покрытием завершены!")
@@ -54,7 +60,7 @@ def start_test_db():
     """Запускает тестовую базу данных"""
     print("🚀 Запуск тестовой базы данных...")
     try:
-        result = subprocess.run(
+        _ = subprocess.run(
             ["docker-compose", "-f", "docker-compose.test.yml", "up", "-d"],
             check=True,
             capture_output=True,
@@ -71,7 +77,7 @@ def stop_test_db():
     """Останавливает тестовую базу данных"""
     print("🛑 Остановка тестовой базы данных...")
     try:
-        result = subprocess.run(
+        _ = subprocess.run(
             ["docker-compose", "-f", "docker-compose.test.yml", "down", "-v"],
             check=True,
             capture_output=True,

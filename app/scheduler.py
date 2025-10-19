@@ -1,6 +1,5 @@
 from datetime import datetime
 
-from apscheduler import schedulers
 from apscheduler.schedulers.background import BackgroundScheduler
 
 from app.crud.vacancy import create_vacancy
@@ -20,7 +19,7 @@ def job_fetch_vacancies():
         for item in items:
             vacancy_data = VacancyCreate(
                 title=item["name"],
-                company=item["employer"]["name"] if item.get("employer") else "N/A",
+                company=(item["employer"]["name"] if item.get("employer") else "N/A"),
                 location=item["area"]["name"] if item.get("area") else "N/A",
                 url=item["alternate_url"],
             )

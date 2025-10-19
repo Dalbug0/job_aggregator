@@ -1,7 +1,4 @@
 # tests/conftest.py
-import os
-import subprocess
-import time
 
 import pytest
 from fastapi.testclient import TestClient
@@ -27,7 +24,6 @@ def is_test_db_available():
 
 @pytest.fixture(scope="session")
 def test_db():
-
     if not is_test_db_available():
         pytest.skip(
             "Тестовая база данных PostgreSQL недоступна. Запустите: docker-compose -f docker-compose.test.yml up -d"
