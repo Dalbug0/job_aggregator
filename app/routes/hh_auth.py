@@ -1,5 +1,6 @@
 from urllib.parse import urlencode
 
+import httpx
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 from starlette.responses import RedirectResponse
@@ -7,7 +8,7 @@ from starlette.responses import RedirectResponse
 from app.config import hh_settings
 from app.database import get_db
 from app.models import HHToken
-from app.services.hh_auth import exchange_code_for_token
+from app.services.hh_auth import exchange_code_for_token, get_hh_token
 
 router = APIRouter(prefix="/api/v1/auth", tags=["auth"])
 
@@ -37,4 +38,13 @@ def hh_callback(code: str, db: Session = Depends(get_db)):
     db.add(db_token)
     db.commit()
 
-    return {"status": "ok"}  # лучше не возвращать все токены наружу
+    return {"status": "ok"}
+
+
+@router.get("/hh/resumes")
+def get_resumes(access_token: str = Depends(get_hh_token)):
+    response = httpx.get(
+        "https://api.hh.ru/resumes/mine",
+        headers={"Authorization": f"Bearer {access_token}"},
+    )
+    return response.json()
