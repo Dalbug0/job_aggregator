@@ -1,16 +1,19 @@
 [tool.black]
 line-length = 79
 target-version = ["py311"]
-exclude = [
-    ".venv",
-    "venv",
-    "__pycache__",
-    "migrations",
-    ".pytest_cache",
-    ".ruff_cache",
-    ".mypy_cache",
-    "htmlcov",
-]
+exclude = '''
+(
+    \.venv
+  | venv
+  | __pycache__
+  | migrations
+  | \.pytest_cache
+  | \.ruff_cache
+  | \.mypy_cache
+  | htmlcov
+)
+'''
+
 
 [tool.isort]
 profile = "black"
