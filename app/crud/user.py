@@ -6,8 +6,6 @@ from app.schemas.user import UserCreate
 
 
 def create_user(db: Session, user: UserCreate) -> User:
-    """Создает нового пользователя."""
-    # Проверяем, существует ли пользователь с таким username
     existing_user = (
         db.query(User).filter(User.username == user.username).first()
     )
@@ -17,7 +15,6 @@ def create_user(db: Session, user: UserCreate) -> User:
             detail="User with this username already exists",
         )
 
-    # Проверяем, существует ли пользователь с таким email (если email указан)
     if user.email:
         existing_email = (
             db.query(User).filter(User.email == user.email).first()
@@ -36,10 +33,8 @@ def create_user(db: Session, user: UserCreate) -> User:
 
 
 def get_user_by_id(db: Session, user_id: int) -> User | None:
-    """Получает пользователя по ID."""
     return db.query(User).filter(User.id == user_id).first()
 
 
 def get_user_by_username(db: Session, username: str) -> User | None:
-    """Получает пользователя по username."""
     return db.query(User).filter(User.username == username).first()

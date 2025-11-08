@@ -13,7 +13,6 @@ def register_user(
     user: UserCreate,
     db: Session = Depends(get_db),
 ) -> UserRead:
-    """Регистрация нового пользователя."""
     db_user = create_user(db, user)
     return UserRead.model_validate(db_user)
 
@@ -23,7 +22,6 @@ def get_user(
     user_id: int,
     db: Session = Depends(get_db),
 ) -> UserRead:
-    """Получает информацию о пользователе по ID."""
     db_user = get_user_by_id(db, user_id)
     if not db_user:
         raise HTTPException(
