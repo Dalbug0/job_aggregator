@@ -7,7 +7,7 @@ from starlette.responses import RedirectResponse
 
 from app.config import hh_settings
 from app.database import get_db
-from app.models import HHToken
+from app.models.hh_token import HHToken
 from app.services.hh_auth import exchange_code_for_token, get_hh_token
 
 router = APIRouter(prefix="/api/v1/auth", tags=["auth"])
