@@ -1,1 +1,3 @@
-from app.models.vacancy import Vacancy
+from .hh_token import HHToken
+from .user import User
+from .vacancy import Vacancy

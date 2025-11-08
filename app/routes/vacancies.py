@@ -41,7 +41,9 @@ def add_vacancy(vacancy: VacancyCreate, db: Session = Depends(get_db)):
 
 
 @router.put("/{vacancy_id}", response_model=VacancyRead)
-def up_vacancy(vacancy_id: int, vacancy: VacancyUpdate, db: Session = Depends(get_db)):
+def up_vacancy(
+    vacancy_id: int, vacancy: VacancyUpdate, db: Session = Depends(get_db)
+):
     return update_vacancy(db, vacancy_id, vacancy)
 
 

@@ -9,7 +9,7 @@ from fastapi.responses import JSONResponse
 from app.database import check_connection
 from app.exceptions import generic_exception_handler, http_exception_handler
 from app.logger import logger
-from app.routes import vacancies
+from app.routes import hh_auth, users, vacancies
 from app.scheduler import fin_scheduler, start_scheduler
 
 
@@ -38,7 +38,9 @@ app = FastAPI(
 )
 
 
+app.include_router(users.router)
 app.include_router(vacancies.router)
+app.include_router(hh_auth.router)
 
 app.add_exception_handler(HTTPException, http_exception_handler)
 app.add_exception_handler(Exception, generic_exception_handler)
@@ -55,4 +57,6 @@ def health_db():
         check_connection()
         return {"db": "ok"}
     except Exception as e:
-        return JSONResponse(status_code=503, content={"db": "unavailable", "detail": str(e)})
+        return JSONResponse(
+            status_code=503, content={"db": "unavailable", "detail": str(e)}
+        )

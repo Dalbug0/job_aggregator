@@ -29,7 +29,25 @@ class Settings(BaseSettings):
     # Choose env file based on APP_ENV (dev/prod), default to .env.dev for local
     _env = os.getenv("APP_ENV", "dev")
     _env_file = ".env.prod" if _env == "prod" else ".env.dev"
-    model_config = SettingsConfigDict(env_file=_env_file, env_file_encoding="utf-8")
+    model_config = SettingsConfigDict(
+        env_file=_env_file, env_file_encoding="utf-8"
+    )
+
+
+class HHSettings(BaseSettings):
+    hh_client_id: str
+    hh_client_secret: str
+    hh_redirect_uri: str
+
+    _env = os.getenv("APP_ENV", "dev")
+    _env_file = ".env.hh.prod" if _env == "prod" else ".env.hh.dev"
+
+    model_config = SettingsConfigDict(
+        env_file=_env_file,
+        env_file_encoding="utf-8",
+        env_nested_delimiter="_",
+    )
 
 
 settings = Settings()
+hh_settings = HHSettings()
