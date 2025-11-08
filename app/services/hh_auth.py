@@ -8,7 +8,7 @@ from app.models.hh_token import HHToken
 
 
 def exchange_code_for_token(code: str) -> dict:
-    token_url = "https://hh.ru/oauth/token"
+    token_url = "https://api.hh.ru/token"
     data = {
         "grant_type": "authorization_code",
         "client_id": hh_settings.hh_client_id,
@@ -16,9 +16,11 @@ def exchange_code_for_token(code: str) -> dict:
         "code": code,
         "redirect_uri": hh_settings.hh_redirect_uri,
     }
-    response = httpx.post(token_url, data=data)
+    headers = {"Content-Type": "application/x-www-form-urlencoded"}
+    response = httpx.post(token_url, data=data, headers=headers)
     if response.status_code != 200:
-        raise HTTPException(status_code=400, detail="OAuth2 exchange failed")
+        error_detail = response.text or "OAuth2 exchange failed"
+        raise HTTPException(status_code=400, detail=error_detail)
     return response.json()
 
 
@@ -27,17 +29,18 @@ def refresh_hh_token(user_id: int, db):
     if not token:
         raise HTTPException(status_code=401, detail="No hh.ru token found")
 
-    response = httpx.post(
-        "https://hh.ru/oauth/token",
-        data={
-            "grant_type": "refresh_token",
-            "refresh_token": token.refresh_token,
-            "client_id": hh_settings.hh_client_id,
-            "client_secret": hh_settings.hh_client_secret,
-        },
-    )
+    token_url = "https://api.hh.ru/token"
+    data = {
+        "grant_type": "refresh_token",
+        "refresh_token": token.refresh_token,
+        "client_id": hh_settings.hh_client_id,
+        "client_secret": hh_settings.hh_client_secret,
+    }
+    headers = {"Content-Type": "application/x-www-form-urlencoded"}
+    response = httpx.post(token_url, data=data, headers=headers)
     if response.status_code != 200:
-        raise HTTPException(status_code=400, detail="Failed to refresh token")
+        error_detail = response.text or "Failed to refresh token"
+        raise HTTPException(status_code=400, detail=error_detail)
 
     new_tokens = response.json()
     token.access_token = new_tokens["access_token"]
