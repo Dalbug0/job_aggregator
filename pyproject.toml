@@ -42,10 +42,8 @@ exclude = [
     "htmlcov",
 ]
 
-[tool.ruff.lint]
-per-file-ignores = {
-    "__init__.py": ["F401"],  # Allow unused imports in __init__.py files
-}
+[tool.ruff.lint.per-file-ignores]
+"__init__.py" = ["F401"]  # Allow unused imports in __init__.py files
 
 [tool.flake8]
 max-line-length = 79
