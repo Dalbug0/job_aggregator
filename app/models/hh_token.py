@@ -1,7 +1,5 @@
 # app/models/HHToken.py
-from datetime import datetime
-
-from sqlalchemy import Column, DateTime, ForeignKey, Integer, String
+from sqlalchemy import Column, DateTime, ForeignKey, Integer, String, func
 from sqlalchemy.orm import relationship
 
 from app.database import Base
@@ -15,6 +13,6 @@ class HHToken(Base):
     access_token = Column(String, nullable=False)
     refresh_token = Column(String, nullable=False)
     expires_in = Column(Integer)
-    created_at = Column(DateTime, default=datetime.utcnow)
+    created_at = Column(DateTime, server_default=func.now())
 
     user = relationship("User", back_populates="tokens")
