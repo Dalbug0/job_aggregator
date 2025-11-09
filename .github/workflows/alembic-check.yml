@@ -8,6 +8,12 @@ on:
 jobs:
   alembic-check:
     runs-on: ubuntu-latest
+    env:
+          DATABASE_URL: postgresql+psycopg2://postgres:postgres@localhost:5432/job_db
+          PYTHONPATH: ${{ github.workspace }}
+          HH_CLIENT_ID: dummy
+          HH_CLIENT_SECRET: dummy
+          HH_REDIRECT_URI: http://localhost:8000/api/v1/auth/hh/callback
 
     services:
       postgres:
@@ -37,16 +43,10 @@ jobs:
           pip install -r requirements.txt
 
       - name: Run Alembic upgrade
-        env:
-          DATABASE_URL: postgresql+psycopg2://postgres:postgres@localhost:5432/job_db
-          PYTHONPATH: ${{ github.workspace }}
         run: |
           alembic upgrade head
 
       - name: Run Alembic check
-        env:
-          DATABASE_URL: postgresql+psycopg2://postgres:postgres@localhost:5432/job_db
-          PYTHONPATH: ${{ github.workspace }}
         run: |
           alembic check
   test:
@@ -88,4 +88,7 @@ jobs:
           POSTGRES_HOST: localhost
           POSTGRES_PORT: 5433
           DISABLE_SCHEDULER: "1"
+          HH_CLIENT_ID: dummy
+          HH_CLIENT_SECRET: dummy
+          HH_REDIRECT_URI: http://localhost:8000/api/v1/auth/hh/callback
         run: pytest --cov=app --cov-report=term-missing
