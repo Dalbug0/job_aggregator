@@ -1,12 +1,13 @@
 from urllib.parse import urlencode
 
 import httpx
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from starlette.responses import RedirectResponse
 
 from app.config import hh_settings
 from app.database import get_db
+from app.models import User
 from app.models.hh_token import HHToken
 from app.services.hh_auth import exchange_code_for_token, get_hh_token
 
@@ -48,3 +49,15 @@ def get_resumes(access_token: str = Depends(get_hh_token)):
         headers={"Authorization": f"Bearer {access_token}"},
     )
     return response.json()
+
+
+@router.post("/hh/resumes/select/{resume_id}")
+def select_resume(
+    resume_id: str, db: Session = Depends(get_db), user_id: int = 1
+):  # Убрать значение по умолчанию для user_id когда закончю шифровку
+    user = db.query(User).get(user_id)
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    user.active_resume_id = resume_id
+    db.commit()
+    return {"status": "ok", "active_resume_id": resume_id}
