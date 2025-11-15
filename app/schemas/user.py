@@ -16,6 +16,7 @@ class UserCreate(UserBase):
 class UserRead(UserBase):
     id: int
     created_at: datetime
+    active_resume_id: str
 
     class Config:
         from_attributes = True  # для работы с SQLAlchemy моделей
