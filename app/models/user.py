@@ -11,5 +11,6 @@ class User(Base):
     username = Column(String, unique=True, index=True, nullable=False)
     email = Column(String, unique=True, index=True, nullable=True)
     created_at = Column(DateTime, server_default=func.now())
+    active_resume_id = Column(String, nullable=True)
 
     tokens = relationship("HHToken", back_populates="user")
