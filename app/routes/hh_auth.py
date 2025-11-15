@@ -61,3 +61,29 @@ def select_resume(
     user.active_resume_id = resume_id
     db.commit()
     return {"status": "ok", "active_resume_id": resume_id}
+
+
+@router.post("/hh/resumes/{resume_id}/publish")
+def publish_resume(resume_id: str, access_token: str = Depends(get_hh_token)):
+    response = httpx.post(
+        f"https://api.hh.ru/resumes/{resume_id}/publish",
+        headers={"Authorization": f"Bearer {access_token}"},
+    )
+    if response.status_code != 200:
+        raise HTTPException(status_code=400, detail="Failed to publish resume")
+    return {"status": "ok", "message": "Resume published"}
+
+
+@router.get("/hh/resumes/{resume_id}/vacancies")
+def search_vacancies_by_resume(
+    resume_id: str, access_token: str = Depends(get_hh_token)
+):
+    response = httpx.get(
+        f"https://api.hh.ru/resumes/{resume_id}/similar_vacancies",
+        headers={"Authorization": f"Bearer {access_token}"},
+    )
+    if response.status_code != 200:
+        raise HTTPException(
+            status_code=400, detail="Failed to fetch vacancies"
+        )
+    return response.json()
