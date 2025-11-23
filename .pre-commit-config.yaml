@@ -3,13 +3,26 @@ repos:
     rev: 5.12.0
     hooks:
       - id: isort
+        args: ["--profile", "black", "--line-length", "79"]
+        exclude: ^(\.venv|venv|__pycache__|migrations|\.pytest_cache|\.ruff_cache|\.mypy_cache|htmlcov)/
 
   - repo: https://github.com/psf/black
     rev: 23.9.1
     hooks:
       - id: black
+        args: ["--line-length", "79", "--target-version", "py311"]
+        exclude: ^(\.venv|venv|__pycache__|migrations|\.pytest_cache|\.ruff_cache|\.mypy_cache|htmlcov)/
 
   - repo: https://github.com/charliermarsh/ruff-pre-commit
     rev: v0.1.5
     hooks:
       - id: ruff
+        args: ["--fix", "--line-length", "79"]
+        exclude: ^(\.venv|venv|__pycache__|migrations|\.pytest_cache|\.ruff_cache|\.mypy_cache|htmlcov)/
+
+  - repo: https://github.com/pycqa/flake8
+    rev: 6.1.0
+    hooks:
+      - id: flake8
+        args: ["--max-line-length=79"]
+        exclude: ^(\.venv|venv|__pycache__|migrations|\.pytest_cache|\.ruff_cache|\.mypy_cache|htmlcov)/
