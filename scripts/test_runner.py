@@ -10,7 +10,9 @@ def run_tests():
     """Запускает все тесты"""
     print("🧪 Запуск тестов...")
     try:
-        _ = subprocess.run([sys.executable, "-m", "pytest", "tests/", "-v"], check=True)
+        _ = subprocess.run(
+            [sys.executable, "-m", "pytest", "tests/", "-v"], check=True
+        )
         print("✅ Все тесты прошли успешно!")
         return True
     except subprocess.CalledProcessError as e:
@@ -93,13 +95,29 @@ def stop_test_db():
 if __name__ == "__main__":
     if len(sys.argv) < 2:
         print("Использование:")
-        print("  python scripts/test_runner.py test           - запустить тесты")
-        print("  python scripts/test_runner.py coverage        - запустить тесты с покрытием")
-        print("  python scripts/test_runner.py db-status       - проверить статус БД")
-        print("  python scripts/test_runner.py db-start       - запустить тестовую БД")
-        print("  python scripts/test_runner.py db-stop         - остановить тестовую БД")
         print(
-            "  python scripts/test_runner.py full            - запустить БД, тесты и остановить БД"
+            "  python scripts/test_runner.py test           "
+            "- запустить тесты"
+        )
+        print(
+            "  python scripts/test_runner.py coverage       "
+            "- запустить тесты с покрытием"
+        )
+        print(
+            "  python scripts/test_runner.py db-status      "
+            "- проверить статус БД"
+        )
+        print(
+            "  python scripts/test_runner.py db-start       "
+            "- запустить тестовую БД"
+        )
+        print(
+            "  python scripts/test_runner.py db-stop        "
+            "- остановить тестовую БД"
+        )
+        print(
+            "  python scripts/test_runner.py full           "
+            "- запустить БД, тесты и остановить БД"
         )
         sys.exit(1)
 

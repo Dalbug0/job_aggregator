@@ -116,7 +116,9 @@ def test_filter_by_company(client):
 
 def test_pagination(client):
     for i in range(15):
-        client.post("/vacancies/", json={"title": f"Dev{i}", "company": "Test"})
+        client.post(
+            "/vacancies/", json={"title": f"Dev{i}", "company": "Test"}
+        )
 
     response = client.get("/vacancies/?skip=5&limit=5")
     assert response.status_code == 200

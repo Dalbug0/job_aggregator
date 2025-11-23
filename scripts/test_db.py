@@ -20,7 +20,7 @@ def start_test_db():
         print("📊 Статус тестовой базы данных:")
         print(result.stdout)
         print("📊 База данных доступна на localhost:5433")
-        print("🔗 Подключение: postgresql://test_user:test_pass@localhost:5433/job_aggregator_test")
+        print("🔗 Подключение...")
     except subprocess.CalledProcessError as e:
         print(f"❌ Ошибка при запуске базы данных: {e}")
         print(f"Вывод: {e.stderr}")

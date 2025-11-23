@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import Optional
+from typing import Dict, Optional
 
 from pydantic import BaseModel, HttpUrl
 
@@ -11,6 +11,8 @@ class VacancyBase(BaseModel):
     company: str
     location: Optional[str] = None
     url: Optional[HttpUrl] = None
+    salary: Optional[Dict] = None
+    source: Optional[str] = "hh.ru"  # None
 
     class Config:
         json_schema_extra = {"example": vacancy.vacancy_example}
@@ -34,6 +36,8 @@ class VacancyUpdate(BaseModel):
     company: Optional[str] = None
     location: Optional[str] = None
     url: Optional[HttpUrl] = None
+    salary: Optional[Dict] = None
+    source: Optional[str] = None
 
 
 class VacancyDelete(BaseModel):

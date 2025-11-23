@@ -1,25 +1,28 @@
 [tool.black]
 line-length = 79
 target-version = ["py311"]
-exclude = [
-    ".venv",
-    "venv",
-    "__pycache__",
-    "migrations",
-    ".pytest_cache",
-    ".ruff_cache",
-    ".mypy_cache",
-    "htmlcov",
-]
+exclude = '''
+(
+    \.venv
+  | venv
+  | __pycache__
+  | migrations
+  | \.pytest_cache
+  | \.ruff_cache
+  | \.mypy_cache
+  | htmlcov
+)
+'''
+
 
 [tool.isort]
 profile = "black"
 line_length = 79
+skip_glob = ["migrations/*"]
 skip = [
     ".venv",
     "venv",
     "__pycache__",
-    "migrations",
     ".pytest_cache",
     ".ruff_cache",
     ".mypy_cache",
@@ -38,6 +41,9 @@ exclude = [
     ".mypy_cache",
     "htmlcov",
 ]
+
+[tool.ruff.lint.per-file-ignores]
+"__init__.py" = ["F401"]  # Allow unused imports in __init__.py files
 
 [tool.flake8]
 max-line-length = 79
