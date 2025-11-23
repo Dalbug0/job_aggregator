@@ -1,3 +1,5 @@
+import time
+
 import httpx
 from fastapi import Depends, HTTPException
 from sqlalchemy.orm import Session
@@ -51,6 +53,13 @@ def refresh_hh_token(user_id: int, db):
     return token
 
 
+def expired(token_info: HHToken) -> bool:
+    expire_timestamp = (
+        token_info.created_at.timestamp() + token_info.expires_in
+    )
+    return time.time() > expire_timestamp
+
+
 def get_hh_token(user_id: int = 1, db: Session = Depends(get_db)):
     token = db.query(HHToken).filter_by(user_id=user_id).first()
     if not token:
@@ -58,8 +67,7 @@ def get_hh_token(user_id: int = 1, db: Session = Depends(get_db)):
             status_code=401, detail="hh.ru account not connected"
         )
 
-    # TODO: проверить срок действия и обновить при необходимости
-    # if expired(token):
-    #     token = refresh_hh_token(user_id, db)
+    if expired(token):
+        token = refresh_hh_token(user_id, db)
 
     return token.access_token

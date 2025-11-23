@@ -26,7 +26,8 @@ def is_test_db_available():
 def test_db():
     if not is_test_db_available():
         pytest.skip(
-            "Тестовая база данных PostgreSQL недоступна. Запустите: docker-compose -f docker-compose.test.yml up -d"
+            "Тестовая база данных PostgreSQL недоступна. "
+            "Запустите: docker-compose -f docker-compose.test.yml up -d"
         )
 
     engine = create_engine(test_settings.database_url, pool_pre_ping=True)
@@ -39,7 +40,9 @@ def test_db():
 
 @pytest.fixture(scope="function")
 def test_session(test_db):
-    TestingSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=test_db)
+    TestingSessionLocal = sessionmaker(
+        autocommit=False, autoflush=False, bind=test_db
+    )
     session = TestingSessionLocal()
     try:
         yield session

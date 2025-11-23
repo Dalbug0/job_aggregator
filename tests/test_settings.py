@@ -21,7 +21,9 @@ class TestConfig(BaseSettings):
             f"@{self.POSTGRES_HOST}:{self.POSTGRES_PORT}/{self.POSTGRES_DB}"
         )
 
-    model_config = SettingsConfigDict(env_file=".env.test", env_file_encoding="utf-8")
+    model_config = SettingsConfigDict(
+        env_file=".env.test", env_file_encoding="utf-8"
+    )
 
 
 test_settings = TestConfig()
