@@ -25,12 +25,14 @@ async def lifespan(app: FastAPI):
     yield
     if os.getenv("DISABLE_SCHEDULER") != "1":
         fin_scheduler()
+        fin_scheduler()
     print("Приложение остановленно.")
 
 
 app = FastAPI(
     title="Vacancies API",
-    description="API для управления вакансиями и интеграции с внешними сервисами",
+    description="API для управления вакансиями и"
+    "интеграции с внешними сервисами",
     version="1.0.0",
     openapi_url="/api/v1/openapi.json",
     docs_url="/api/v1/docs",

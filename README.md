@@ -7,9 +7,12 @@ FastAPI приложение для агрегации вакансий с ра�
 - 🔍 Поиск вакансий через API HeadHunter
 - 📊 Полный CRUD API для управления вакансиями
 - 🔧 Фильтрация и сортировка вакансий
+- 📊 Полный CRUD API для управления вакансиями
+- 🔧 Фильтрация и сортировка вакансий
 - 🗄️ PostgreSQL база данных
 - 🐳 Docker контейнеризация
 - 📈 Автоматическое обновление данных
+- 🧪 Полное тестовое покрытие (93%)
 - 🧪 Полное тестовое покрытие (93%)
 
 ## Технологии
@@ -58,6 +61,9 @@ docker-compose up -d
 
 # Проверка статуса
 docker-compose ps
+
+# Остановка всех сервисов без удаления контейнеров
+docker-compose stop
 
 # Остановка всех сервисов без удаления контейнеров
 docker-compose stop
@@ -192,7 +198,16 @@ python scripts/test_runner.py coverage
 job_aggregator/
 ├── app/                    # Основное приложение
 │   ├── crud/              # CRUD операции (создание, чтение, обновление, удаление)
+│   ├── crud/              # CRUD операции (создание, чтение, обновление, удаление)
 │   ├── models/            # SQLAlchemy модели
+│   ├── routes/            # API маршруты (REST endpoints)
+│   ├── schemas/           # Pydantic схемы (валидация данных)
+│   ├── services/          # Бизнес-логика (HH API интеграция)
+│   ├── config.py          # Конфигурация приложения
+│   ├── database.py        # Настройка БД и сессий
+│   ├── main.py            # Точка входа FastAPI
+│   ├── scheduler.py       # Планировщик задач
+│   └── exceptions.py      # Обработка ошибок
 │   ├── routes/            # API маршруты (REST endpoints)
 │   ├── schemas/           # Pydantic схемы (валидация данных)
 │   ├── services/          # Бизнес-логика (HH API интеграция)
@@ -205,7 +220,13 @@ job_aggregator/
 │   ├── conftest.py        # Конфигурация pytest и фикстуры
 │   ├── test_settings.py   # Настройки для тестовой среды
 │   └── test_vacancies.py  # Тесты API (CRUD операции)
+│   ├── conftest.py        # Конфигурация pytest и фикстуры
+│   ├── test_settings.py   # Настройки для тестовой среды
+│   └── test_vacancies.py  # Тесты API (CRUD операции)
 ├── scripts/               # Вспомогательные скрипты
+│   ├── test_runner.py     # Автоматизированный запуск тестов
+│   └── test_db.py         # Тестирование БД
+├── migrations/           # Alembic миграции БД
 │   ├── test_runner.py     # Автоматизированный запуск тестов
 │   └── test_db.py         # Тестирование БД
 ├── migrations/           # Alembic миграции БД

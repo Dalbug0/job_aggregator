@@ -51,6 +51,11 @@ def check_test_db():
             capture_output=True,
             text=True,
         )
+        result = subprocess.run(
+            ["docker-compose", "-f", "docker-compose.test.yml", "ps"],
+            capture_output=True,
+            text=True,
+        )
         print(result.stdout)
         return True
     except subprocess.CalledProcessError as e:

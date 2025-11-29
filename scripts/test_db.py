@@ -16,6 +16,12 @@ def start_test_db():
             capture_output=True,
             text=True,
         )
+        result = subprocess.run(
+            ["docker-compose", "-f", "docker-compose.test.yml", "up", "-d"],
+            check=True,
+            capture_output=True,
+            text=True,
+        )
         print("✅ Тестовая база данных запущена")
         print("📊 Статус тестовой базы данных:")
         print(result.stdout)
@@ -38,6 +44,12 @@ def stop_test_db():
             capture_output=True,
             text=True,
         )
+        subprocess.run(
+            ["docker-compose", "-f", "docker-compose.test.yml", "down", "-v"],
+            check=True,
+            capture_output=True,
+            text=True,
+        )
         print("✅ Тестовая база данных остановлена")
     except subprocess.CalledProcessError as e:
         print(f"❌ Ошибка при остановке базы данных: {e}")
@@ -48,6 +60,11 @@ def stop_test_db():
 def check_db_status():
     """Проверяет статус тестовой базы данных"""
     try:
+        result = subprocess.run(
+            ["docker-compose", "-f", "docker-compose.test.yml", "ps"],
+            capture_output=True,
+            text=True,
+        )
         result = subprocess.run(
             ["docker-compose", "-f", "docker-compose.test.yml", "ps"],
             capture_output=True,

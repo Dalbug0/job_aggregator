@@ -29,6 +29,7 @@ class VacancyRead(VacancyBase):
     class Config:
         from_attributes = True  # для работы с SQLAlchemy моделей
         json_schema_extra = {"example": vacancy.vacancy_read_example}
+        json_schema_extra = {"example": vacancy.vacancy_read_example}
 
 
 class VacancyUpdate(BaseModel):

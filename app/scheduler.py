@@ -42,8 +42,16 @@ def start_scheduler():
         next_run_time=datetime.now(),
         misfire_grace_time=30,
     )
+    scheduler.add_job(
+        job_fetch_vacancies,
+        "interval",
+        minutes=60,
+        next_run_time=datetime.now(),
+        misfire_grace_time=30,
+    )
     scheduler.start()
 
 
 def fin_scheduler():
+    scheduler.shutdown()
     scheduler.shutdown()

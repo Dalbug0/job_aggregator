@@ -12,6 +12,7 @@ def test_health_check(client):
 def test_health_db(client):
     response = client.get("/health/db")
     assert response.status_code in (200, 503)
+    assert response.status_code in (200, 503)
     if response.status_code == 200:
         assert response.json() == {"db": "ok"}
     else:
