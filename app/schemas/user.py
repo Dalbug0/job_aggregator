@@ -6,7 +6,7 @@ from pydantic import BaseModel, EmailStr, constr
 
 class UserBase(BaseModel):
     username: str
-    email: Optional[EmailStr] = None
+    email: EmailStr
 
 
 # Для сценария без пароля (импорт пользователй)
@@ -25,3 +25,12 @@ class UserRead(UserBase):
 
 class UserRegisterSchema(UserBase):
     password: constr(min_length=8, max_length=128)
+
+
+class LoginSchema(UserRegisterSchema):
+    pass
+
+
+class LoginResponse(BaseModel):
+    access_token: str
+    refresh_token: str

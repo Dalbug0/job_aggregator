@@ -18,15 +18,12 @@ def create_user(db: Session, user: UserCreate) -> User:
             detail="User with this username already exists",
         )
 
-    if user.email:
-        existing_email = (
-            db.query(User).filter(User.email == user.email).first()
+    existing_email = db.query(User).filter(User.email == user.email).first()
+    if existing_email:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="User with this email already exists",
         )
-        if existing_email:
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail="User with this email already exists",
-            )
 
     db_user = User(**user.model_dump())
     db.add(db_user)
@@ -53,3 +50,15 @@ def create_user_by_password(db: Session, user: UserRegisterSchema) -> User:
     db.add(auth_user)
     db.commit()
     return base_user
+
+
+def authenticate_user(db: Session, email: str, password: str) -> User | None:
+    user = db.query(User).filter(User.email == email).first()
+    if not user or not user.auth:
+        return None
+
+    try:
+        ph.verify(user.auth.password_hash, password)
+        return user
+    except Exception:
+        return None
