@@ -1,4 +1,4 @@
-from sqlalchemy import Column, DateTime, Integer, String, func
+from sqlalchemy import Column, DateTime, ForeignKey, Integer, String, func
 from sqlalchemy.orm import relationship
 
 from app.database import Base
@@ -14,3 +14,12 @@ class User(Base):
     active_resume_id = Column(String, nullable=True)
 
     tokens = relationship("HHToken", back_populates="user")
+
+
+class UserAuth(Base):
+    __tablename__ = "users_auth"
+    id = Column(
+        Integer, ForeignKey("users.id", ondelete="CASCADE"), primary_key=True
+    )
+    password_hash = Column(String, nullable=False)
+    user = relationship("User", backref="auth", uselist=False)
