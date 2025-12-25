@@ -1,8 +1,11 @@
+from argon2 import PasswordHasher
 from fastapi import HTTPException, status
 from sqlalchemy.orm import Session
 
-from app.models import User
-from app.schemas.user import UserCreate
+from app.models import User, UserAuth
+from app.schemas.user import UserCreate, UserRegisterSchema
+
+ph = PasswordHasher()
 
 
 def create_user(db: Session, user: UserCreate) -> User:
@@ -38,3 +41,15 @@ def get_user_by_id(db: Session, user_id: int) -> User | None:
 
 def get_user_by_username(db: Session, username: str) -> User | None:
     return db.query(User).filter(User.username == username).first()
+
+
+def create_user_by_password(db: Session, user: UserRegisterSchema) -> User:
+    base_user = create_user(
+        db, UserCreate(username=user.username, email=user.email)
+    )
+
+    hashed_password = ph.hash(user.password)
+    auth_user = UserAuth(id=base_user.id, password_hash=hashed_password)
+    db.add(auth_user)
+    db.commit()
+    return base_user

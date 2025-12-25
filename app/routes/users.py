@@ -1,11 +1,17 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
-from app.crud.user import create_user, get_user_by_id
+from app.crud.user import create_user, create_user_by_password, get_user_by_id
 from app.database import get_db
-from app.schemas.user import UserCreate, UserRead
+from app.schemas.user import UserCreate, UserRead, UserRegisterSchema
 
 router = APIRouter(prefix="/users", tags=["users"])
+
+
+@router.post("/register")
+def register(user: UserRegisterSchema, db: Session = Depends(get_db)) -> list:
+    base_user = create_user_by_password(db, user)
+    return {"status": "ok", "user_id": base_user.id}
 
 
 @router.post("/", response_model=UserRead, status_code=status.HTTP_201_CREATED)
