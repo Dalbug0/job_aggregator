@@ -6,12 +6,21 @@ from jose import JWTError, jwt
 from sqlalchemy.orm import Session
 
 from app.config import settings
+from app.crud import (
+    get_refresh_token,
+    invalidate_user_refresh_tokens,
+    save_refresh_token,
+)
 from app.database import get_db
 from app.models import User
 from app.schemas import UserRead
 
 SECRET_KEY = settings.SECRET_KEY
 ALGORITHM = "HS256"
+
+# Token expiration times in minutes
+ACCESS_TOKEN_EXPIRE_MINUTES = 15
+REFRESH_TOKEN_EXPIRE_MINUTES = 60 * 24  # 24 hours
 
 security = HTTPBearer()
 
@@ -40,27 +49,46 @@ def verify_token(token: str) -> dict:
         )
 
 
-def create_tokens(user_id: int) -> dict:
+def create_tokens(user_id: int, db: Session) -> dict:
     access_token = create_token(
-        {"sub": str(user_id), "type": "access"}, expires_minutes=15
+        {"sub": str(user_id), "type": "access"},
+        expires_minutes=ACCESS_TOKEN_EXPIRE_MINUTES,
     )
-    refresh_token = create_token(
-        {"sub": str(user_id), "type": "refresh"}, expires_minutes=60 * 24
+    refresh_token_value = create_token(
+        {"sub": str(user_id), "type": "refresh"},
+        expires_minutes=REFRESH_TOKEN_EXPIRE_MINUTES,
     )
+
+    # Calculate refresh token expiration
+    refresh_expires_at = datetime.datetime.now(
+        datetime.timezone.utc
+    ) + datetime.timedelta(minutes=REFRESH_TOKEN_EXPIRE_MINUTES)
+
+    # Save refresh token to database
+    save_refresh_token(db, user_id, refresh_token_value, refresh_expires_at)
+
     return {
         "access_token": access_token,
-        "refresh_token": refresh_token,
+        "refresh_token": refresh_token_value,
     }
 
 
-def refresh_token(refresh_token: str) -> dict:
+def refresh_token(refresh_token: str, db: Session) -> dict:
     try:
         payload = verify_token(refresh_token)
         user_id = int(payload.get("sub"))
     except Exception:
         raise HTTPException(status_code=401, detail="Invalid refresh token")
 
-    return create_tokens(user_id)
+    # Verify refresh token exists in database and is valid
+    db_token = get_refresh_token(db, refresh_token)
+    if not db_token or db_token.user_id != user_id:
+        raise HTTPException(status_code=401, detail="Invalid refresh token")
+
+    # Invalidate old refresh token for security
+    invalidate_user_refresh_tokens(db, user_id)
+
+    return create_tokens(user_id, db)
 
 
 def get_current_user(

@@ -29,11 +29,13 @@ def login(user: LoginSchema, db: Session = Depends(get_db)) -> LoginResponse:
     if not db_user:
         raise HTTPException(status_code=401, detail="Invalid credentials")
 
-    tokens = create_tokens(db_user.id)
+    tokens = create_tokens(db_user.id, db)
     return LoginResponse(**tokens)
 
 
 @router.post("/refresh", response_model=RefreshTokenResponse)
-def refresh_access_token(request: RefreshTokenRequest) -> RefreshTokenResponse:
-    tokens = refresh_token(request.refresh_token)
+def refresh_access_token(
+    request: RefreshTokenRequest, db: Session = Depends(get_db)
+) -> RefreshTokenResponse:
+    tokens = refresh_token(request.refresh_token, db)
     return RefreshTokenResponse(**tokens)
