@@ -12,4 +12,4 @@ class RefreshToken(Base):
     token = Column(String, unique=True, nullable=False)
     expires_at = Column(DateTime, nullable=False)
 
-    user = relationship("UserBase", backref="refresh_tokens")
+    user = relationship("User", backref="refresh_tokens")
