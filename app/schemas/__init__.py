@@ -1,11 +1,15 @@
+from .auth import (
+    LoginResponse,
+    RefreshTokenRequest,
+    RefreshTokenResponse,
+    UserRegisterResponse,
+)
 from .hh_resume import AdditionalProperties, ResumeCreate
 from .user import (
-    LoginResponse,
     LoginSchema,
     UserBase,
     UserCreate,
     UserRead,
-    UserRegisterResponse,
     UserRegisterSchema,
 )
 from .vacancy import (
@@ -18,9 +22,11 @@ from .vacancy import (
 
 __all__ = [
     "AdditionalProperties",
-    "ResumeCreate",
     "LoginResponse",
     "LoginSchema",
+    "RefreshTokenRequest",
+    "RefreshTokenResponse",
+    "ResumeCreate",
     "UserBase",
     "UserCreate",
     "UserRead",

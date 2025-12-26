@@ -30,13 +30,3 @@ class UserRegisterSchema(UserBase):
 
 class LoginSchema(UserRegisterSchema):
     pass
-
-
-class LoginResponse(BaseModel):
-    access_token: str
-    refresh_token: str
-
-
-class UserRegisterResponse(BaseModel):
-    status: str
-    user_id: int
