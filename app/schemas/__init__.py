@@ -5,6 +5,7 @@ from .user import (
     UserBase,
     UserCreate,
     UserRead,
+    UserRegisterResponse,
     UserRegisterSchema,
 )
 from .vacancy import (
@@ -23,6 +24,7 @@ __all__ = [
     "UserBase",
     "UserCreate",
     "UserRead",
+    "UserRegisterResponse",
     "UserRegisterSchema",
     "VacancyBase",
     "VacancyCreate",

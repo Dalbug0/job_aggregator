@@ -35,3 +35,8 @@ class LoginSchema(UserRegisterSchema):
 class LoginResponse(BaseModel):
     access_token: str
     refresh_token: str
+
+
+class UserRegisterResponse(BaseModel):
+    status: str
+    user_id: int

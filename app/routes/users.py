@@ -13,6 +13,7 @@ from app.schemas import (
     LoginSchema,
     UserCreate,
     UserRead,
+    UserRegisterResponse,
     UserRegisterSchema,
 )
 from app.services.auth import create_token
@@ -20,10 +21,12 @@ from app.services.auth import create_token
 router = APIRouter(prefix="/users", tags=["users"])
 
 
-@router.post("/register")
-def register(user: UserRegisterSchema, db: Session = Depends(get_db)) -> list:
+@router.post("/register", response_model=UserRegisterResponse)
+def register(
+    user: UserRegisterSchema, db: Session = Depends(get_db)
+) -> UserRegisterResponse:
     base_user = create_user_by_password(db, user)
-    return {"status": "ok", "user_id": base_user.id}
+    return UserRegisterResponse(status="ok", user_id=base_user.id)
 
 
 @router.post("/login", response_model=LoginResponse)
