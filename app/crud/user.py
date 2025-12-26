@@ -58,16 +58,18 @@ def create_user_by_password(db: Session, user: UserRegisterSchema) -> User:
 
 
 def authenticate_user(db: Session, email: str, password: str) -> User | None:
-    user = db.query(User).filter(User.email == email).first()
-    if not user:
-        return None
-
-    if not user.auth:
+    user_auth = (
+        db.query(UserAuth)
+        .join(User, UserAuth.id == User.id)
+        .filter(User.email == email)
+        .first()
+    )
+    if not user_auth:
         return None
 
     try:
-        ph.verify(user.auth.password_hash, password)
-        return user
+        ph.verify(user_auth.password_hash, password)
+        return user_auth.user
     except Exception:
         return None
 
