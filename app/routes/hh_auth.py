@@ -1,6 +1,9 @@
+import base64
+import json
+import time
 from urllib.parse import urlencode
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.orm import Session
 from starlette.responses import RedirectResponse
 
@@ -17,6 +20,7 @@ from app.crud.hh_resume import (
     update_resume,
 )
 from app.crud.hh_token import save_hh_token
+from app.crud.user import get_user_by_id
 from app.database import get_db
 from app.schemas import ResumeCreate, UserRead
 from app.services.auth import get_current_user
@@ -27,11 +31,16 @@ router = APIRouter(prefix="/api/v1/auth", tags=["auth"])
 
 # Fixed routes first
 @router.get("/hh/login")
-def hh_login():
+def hh_login(user_id: int = Query(..., description="User ID for OAuth state")):
+    state_data = {"user_id": user_id, "timestamp": int(time.time())}
+    state_json = json.dumps(state_data)
+    state = base64.urlsafe_b64encode(state_json.encode()).decode()
+
     params = {
         "response_type": "code",
         "client_id": hh_settings.hh_client_id,
         "redirect_uri": hh_settings.hh_redirect_uri,
+        "state": state,
     }
     url = f"https://hh.ru/oauth/authorize?{urlencode(params)}"
     return RedirectResponse(url)
@@ -40,10 +49,39 @@ def hh_login():
 @router.get("/hh/callback")
 def hh_callback(
     code: str,
-    current_user: UserRead = Depends(get_current_user),
+    state: str = Query(..., description="OAuth state parameter"),
     db: Session = Depends(get_db),
 ):
-    user_id = current_user.id
+    if not state:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="State parameter is required",
+        )
+
+    try:
+        state_json = base64.urlsafe_b64decode(state.encode()).decode()
+        state_data = json.loads(state_json)
+        user_id = state_data["user_id"]
+        timestamp = state_data["timestamp"]
+    except (ValueError, KeyError, json.JSONDecodeError):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Invalid state parameter",
+        )
+
+    current_time = int(time.time())
+    if current_time - timestamp > 300:  # 5 minutes
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="State parameter expired",
+        )
+
+    user = get_user_by_id(db, user_id)
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="User not found"
+        )
+
     save_hh_token(db, user_id, code)
     return {"status": "ok"}
 
