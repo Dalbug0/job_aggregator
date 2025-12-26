@@ -6,19 +6,19 @@ from jose import JWTError, jwt
 from sqlalchemy.orm import Session
 
 from app.config import settings
-from app.crud import (
+from app.crud.auth import (
     get_refresh_token,
     invalidate_user_refresh_tokens,
     save_refresh_token,
 )
 from app.database import get_db
+from app.logger import logger
 from app.models import User
 from app.schemas import UserRead
 
 SECRET_KEY = settings.SECRET_KEY
 ALGORITHM = "HS256"
 
-# Token expiration times in minutes
 ACCESS_TOKEN_EXPIRE_MINUTES = 15
 REFRESH_TOKEN_EXPIRE_MINUTES = 60 * 24  # 24 hours
 
@@ -59,12 +59,10 @@ def create_tokens(user_id: int, db: Session) -> dict:
         expires_minutes=REFRESH_TOKEN_EXPIRE_MINUTES,
     )
 
-    # Calculate refresh token expiration
     refresh_expires_at = datetime.datetime.now(
         datetime.timezone.utc
     ) + datetime.timedelta(minutes=REFRESH_TOKEN_EXPIRE_MINUTES)
 
-    # Save refresh token to database
     save_refresh_token(db, user_id, refresh_token_value, refresh_expires_at)
 
     return {
@@ -74,20 +72,27 @@ def create_tokens(user_id: int, db: Session) -> dict:
 
 
 def refresh_token(refresh_token: str, db: Session) -> dict:
+    logger.info("Starting token refresh process")
+
     try:
         payload = verify_token(refresh_token)
         user_id = int(payload.get("sub"))
-    except Exception:
+        logger.info(f"Token verified successfully for user_id: {user_id}")
+    except Exception as e:
+        logger.warning(f"Token verification failed: {str(e)}")
         raise HTTPException(status_code=401, detail="Invalid refresh token")
 
-    # Verify refresh token exists in database and is valid
     db_token = get_refresh_token(db, refresh_token)
     if not db_token or db_token.user_id != user_id:
+        logger.warning(
+            f"Database token validation failed for user_id: {user_id}"
+        )
         raise HTTPException(status_code=401, detail="Invalid refresh token")
 
-    # Invalidate old refresh token for security
+    logger.info(f"Invalidating existing refresh tokens for user_id: {user_id}")
     invalidate_user_refresh_tokens(db, user_id)
 
+    logger.info(f"Creating new tokens for user_id: {user_id}")
     return create_tokens(user_id, db)
 
 
