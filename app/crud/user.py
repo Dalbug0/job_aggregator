@@ -3,7 +3,7 @@ from fastapi import HTTPException, status
 from sqlalchemy.orm import Session
 
 from app.models import User, UserAuth
-from app.schemas.user import UserCreate, UserRegisterSchema
+from app.schemas import UserCreate, UserRegisterSchema
 
 ph = PasswordHasher()
 

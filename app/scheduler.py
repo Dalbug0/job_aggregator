@@ -5,7 +5,7 @@ from apscheduler.schedulers.background import BackgroundScheduler
 from app.crud.vacancy import create_vacancy
 from app.database import SessionLocal
 from app.logger import logger
-from app.schemas.vacancy import VacancyCreate
+from app.schemas import VacancyCreate
 from app.services.hh_api import fetch_vacancies
 
 scheduler = BackgroundScheduler()

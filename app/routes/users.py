@@ -8,7 +8,7 @@ from app.crud.user import (
     get_user_by_id,
 )
 from app.database import get_db
-from app.schemas.user import (
+from app.schemas import (
     LoginResponse,
     LoginSchema,
     UserCreate,

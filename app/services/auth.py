@@ -8,7 +8,7 @@ from sqlalchemy.orm import Session
 from app.config import settings
 from app.database import get_db
 from app.models import User
-from app.schemas.user import UserRead
+from app.schemas import UserRead
 
 SECRET_KEY = settings.SECRET_KEY
 ALGORITHM = "HS256"

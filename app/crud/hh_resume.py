@@ -3,7 +3,7 @@ from fastapi import HTTPException
 from sqlalchemy.orm import Session
 
 from app.models import User
-from app.schemas.hh_resume import ResumeCreate
+from app.schemas import ResumeCreate
 
 
 def hh_request(method: str, url: str, token: str, **kwargs):

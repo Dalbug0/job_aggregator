@@ -18,8 +18,7 @@ from app.crud.hh_resume import (
 )
 from app.crud.hh_token import save_hh_token
 from app.database import get_db
-from app.schemas.hh_resume import ResumeCreate
-from app.schemas.user import UserRead
+from app.schemas import ResumeCreate, UserRead
 from app.services.auth import get_current_user
 from app.services.hh_auth import get_hh_token
 

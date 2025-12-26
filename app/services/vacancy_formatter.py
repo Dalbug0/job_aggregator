@@ -1,5 +1,5 @@
 # app/services/vacancy_formatter.py
-from app.schemas.vacancy import VacancyCreate
+from app.schemas import VacancyCreate
 
 
 def format_hh_vacancies(data: dict) -> list[VacancyCreate]:
