@@ -19,6 +19,8 @@ from app.crud.hh_resume import (
 from app.crud.hh_token import save_hh_token
 from app.database import get_db
 from app.schemas.hh_resume import ResumeCreate
+from app.schemas.user import UserRead
+from app.services.auth import get_current_user
 from app.services.hh_auth import get_hh_token
 
 router = APIRouter(prefix="/api/v1/auth", tags=["auth"])
@@ -37,8 +39,12 @@ def hh_login():
 
 
 @router.get("/hh/callback")
-def hh_callback(code: str, db: Session = Depends(get_db)):
-    user_id = 1  # TODO: заменить на текущего авторизованного пользователя
+def hh_callback(
+    code: str,
+    current_user: UserRead = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    user_id = current_user.id
     save_hh_token(db, user_id, code)
     return {"status": "ok"}
 
@@ -61,28 +67,30 @@ def create_resume_endpoint(
 
 @router.get("/hh/resumes/active")
 def get_active_resume_endpoint(
+    current_user: UserRead = Depends(get_current_user),
     db: Session = Depends(get_db),
-    user_id: int = 1,
     access_token: str = Depends(get_hh_token),
 ):
-    return get_active_resume(db, user_id, access_token)
+    return get_active_resume(db, current_user.id, access_token)
 
 
 @router.get("/hh/resumes/active/vacancies")
 def search_vacancies_by_active_resume_endpoint(
+    current_user: UserRead = Depends(get_current_user),
     db: Session = Depends(get_db),
-    user_id: int = 1,
     access_token: str = Depends(get_hh_token),
 ):
-    return search_vacancies_by_active_resume(db, user_id, access_token)
+    return search_vacancies_by_active_resume(db, current_user.id, access_token)
 
 
 # Then template routes
 @router.post("/hh/resumes/select/{resume_id}")
 def select_resume(
-    resume_id: str, db: Session = Depends(get_db), user_id: int = 1
-):  # Убрать значение по умолчанию для user_id когда закончю шифровку
-    return select_active_resume(db, user_id, resume_id)
+    resume_id: str,
+    current_user: UserRead = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    return select_active_resume(db, current_user.id, resume_id)
 
 
 @router.post("/hh/resumes/{resume_id}/publish")

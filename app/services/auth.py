@@ -8,6 +8,7 @@ from sqlalchemy.orm import Session
 from app.config import settings
 from app.database import get_db
 from app.models import User
+from app.schemas.user import UserRead
 
 SECRET_KEY = settings.SECRET_KEY
 ALGORITHM = "HS256"
@@ -42,7 +43,7 @@ def verify_token(token: str) -> dict:
 def get_current_user(
     credentials: HTTPAuthorizationCredentials = Security(security),
     db: Session = Depends(get_db),
-):
+) -> UserRead:
     token = credentials.credentials
     try:
         payload = verify_token(token)
@@ -53,4 +54,4 @@ def get_current_user(
     user = db.query(User).get(user_id)
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
-    return user
+    return UserRead.model_validate(user)

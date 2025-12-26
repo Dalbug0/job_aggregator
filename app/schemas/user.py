@@ -1,7 +1,7 @@
 from datetime import datetime
 from typing import Optional
 
-from pydantic import BaseModel, EmailStr, constr
+from pydantic import BaseModel, ConfigDict, EmailStr, constr
 
 
 class UserBase(BaseModel):
@@ -19,8 +19,9 @@ class UserRead(UserBase):
     created_at: datetime
     active_resume_id: Optional[str] = None
 
-    class Config:
-        from_attributes = True  # для работы с SQLAlchemy моделей
+    model_config = ConfigDict(
+        from_attributes=True
+    )  # для работы с SQLAlchemy моделей
 
 
 class UserRegisterSchema(UserBase):
