@@ -27,11 +27,9 @@ security = HTTPBearer()
 
 def create_token(data: dict, expires_minutes: int = 30) -> str:
     to_encode = data.copy()
-    expire = datetime.datetime.now(datetime.timezone.utc)
-    +datetime.timedelta(minutes=expires_minutes)
-    to_encode.update(
-        {"exp": expire, "iat": datetime.datetime.now(datetime.timezone.utc)}
-    )
+    now = datetime.datetime.now(datetime.timezone.utc)
+    expire = now + datetime.timedelta(minutes=expires_minutes)
+    to_encode.update({"exp": expire, "iat": now})
     return jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
 
 
