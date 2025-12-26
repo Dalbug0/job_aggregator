@@ -47,11 +47,8 @@ def create_user_by_password(db: Session, user: UserRegisterSchema) -> User:
 
     hashed_password = ph.hash(user.password)
 
-    existing_auth = (
-        db.query(UserAuth).filter(UserAuth.id == base_user.id).first()
-    )
-    if existing_auth:
-        existing_auth.password_hash = hashed_password
+    if base_user.auth:
+        base_user.auth.password_hash = hashed_password
     else:
         auth_user = UserAuth(id=base_user.id, password_hash=hashed_password)
         db.add(auth_user)
@@ -62,7 +59,10 @@ def create_user_by_password(db: Session, user: UserRegisterSchema) -> User:
 
 def authenticate_user(db: Session, email: str, password: str) -> User | None:
     user = db.query(User).filter(User.email == email).first()
-    if not user or not user.auth:
+    if not user:
+        return None
+
+    if not user.auth:
         return None
 
     try:
@@ -70,3 +70,16 @@ def authenticate_user(db: Session, email: str, password: str) -> User | None:
         return user
     except Exception:
         return None
+
+
+def delete_user(db: Session, user_id: int) -> bool:
+    user = db.query(User).filter(User.id == user_id).first()
+    if not user:
+        return False
+
+    if user.auth:
+        db.delete(user.auth)
+
+    db.delete(user)
+    db.commit()
+    return True

@@ -5,6 +5,7 @@ from app.crud.user import (
     authenticate_user,
     create_user,
     create_user_by_password,
+    delete_user,
     get_user_by_id,
 )
 from app.database import get_db
@@ -65,3 +66,16 @@ def get_user(
             status_code=status.HTTP_404_NOT_FOUND, detail="User not found"
         )
     return UserRead.model_validate(db_user)
+
+
+@router.delete("/{user_id}")
+def del_user(
+    user_id: int,
+    db: Session = Depends(get_db),
+) -> dict:
+    deleted = delete_user(db, user_id)
+    if not deleted:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="User not found"
+        )
+    return {"message": "User deleted successfully"}
