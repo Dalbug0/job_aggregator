@@ -40,6 +40,24 @@ def verify_token(token: str) -> dict:
         )
 
 
+def refresh_token(refresh_token: str) -> dict:
+    try:
+        payload = verify_token(refresh_token)
+        user_id = int(payload.get("sub"))
+    except Exception:
+        raise HTTPException(status_code=401, detail="Invalid refresh token")
+
+    new_access_token = create_token({"sub": str(user_id)}, expires_minutes=15)
+    new_refresh_token = create_token(
+        {"sub": str(user_id)}, expires_minutes=60 * 24
+    )
+
+    return {
+        "access_token": new_access_token,
+        "refresh_token": new_refresh_token,
+    }
+
+
 def get_current_user(
     credentials: HTTPAuthorizationCredentials = Security(security),
     db: Session = Depends(get_db),
