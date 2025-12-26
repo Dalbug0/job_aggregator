@@ -46,8 +46,16 @@ def create_user_by_password(db: Session, user: UserRegisterSchema) -> User:
     )
 
     hashed_password = ph.hash(user.password)
-    auth_user = UserAuth(id=base_user.id, password_hash=hashed_password)
-    db.add(auth_user)
+
+    existing_auth = (
+        db.query(UserAuth).filter(UserAuth.id == base_user.id).first()
+    )
+    if existing_auth:
+        existing_auth.password_hash = hashed_password
+    else:
+        auth_user = UserAuth(id=base_user.id, password_hash=hashed_password)
+        db.add(auth_user)
+
     db.commit()
     return base_user
 
