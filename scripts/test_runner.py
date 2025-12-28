@@ -8,21 +8,51 @@ import sys
 
 def run_tests():
     """Запускает все тесты"""
-    print("🧪 Запуск тестов...")
+    print("Запуск тестов...")
     try:
         _ = subprocess.run(
             [sys.executable, "-m", "pytest", "tests/", "-v"], check=True
         )
-        print("✅ Все тесты прошли успешно!")
+        print("Все тесты прошли успешно!")
         return True
     except subprocess.CalledProcessError as e:
-        print(f"❌ Тесты не прошли: {e}")
+        print(f"Тесты не прошли: {e}")
+        return False
+
+
+def run_auth_tests():
+    """Запускает только тесты аутентификации"""
+    print("Запуск тестов аутентификации...")
+    try:
+        _ = subprocess.run(
+            [sys.executable, "-m", "pytest", "tests/test_auth.py", "-v"],
+            check=True,
+        )
+        print("Тесты аутентификации прошли успешно!")
+        return True
+    except subprocess.CalledProcessError as e:
+        print(f"Тесты аутентификации не прошли: {e}")
+        return False
+
+
+def run_vacancy_tests():
+    """Запускает только тесты вакансий"""
+    print("Запуск тестов вакансий...")
+    try:
+        _ = subprocess.run(
+            [sys.executable, "-m", "pytest", "tests/test_vacancies.py", "-v"],
+            check=True,
+        )
+        print("Тесты вакансий прошли успешно!")
+        return True
+    except subprocess.CalledProcessError as e:
+        print(f"Тесты вакансий не прошли: {e}")
         return False
 
 
 def run_tests_with_coverage():
     """Запускает тесты с покрытием кода"""
-    print("🧪 Запуск тестов с покрытием кода...")
+    print("Запуск тестов с покрытием кода...")
     try:
         _ = subprocess.run(
             [
@@ -35,16 +65,16 @@ def run_tests_with_coverage():
             ],
             check=True,
         )
-        print("✅ Тесты с покрытием завершены!")
+        print("Тесты с покрытием завершены!")
         return True
     except subprocess.CalledProcessError as e:
-        print(f"❌ Тесты не прошли: {e}")
+        print(f"Тесты не прошли: {e}")
         return False
 
 
 def check_test_db():
     """Проверяет статус тестовой базы данных"""
-    print("🔍 Проверка статуса тестовой базы данных...")
+    print("Проверка статуса тестовой базы данных...")
     try:
         result = subprocess.run(
             ["docker-compose", "-f", "docker-compose.test.yml", "ps"],
@@ -59,13 +89,13 @@ def check_test_db():
         print(result.stdout)
         return True
     except subprocess.CalledProcessError as e:
-        print(f"❌ Ошибка при проверке статуса БД: {e}")
+        print(f"Ошибка при проверке статуса БД: {e}")
         return False
 
 
 def start_test_db():
     """Запускает тестовую базу данных"""
-    print("🚀 Запуск тестовой базы данных...")
+    print("Запуск тестовой базы данных...")
     try:
         _ = subprocess.run(
             ["docker-compose", "-f", "docker-compose.test.yml", "up", "-d"],
@@ -73,16 +103,16 @@ def start_test_db():
             capture_output=True,
             text=True,
         )
-        print("✅ Тестовая база данных запущена")
+        print("Тестовая база данных запущена")
         return True
     except subprocess.CalledProcessError as e:
-        print(f"❌ Ошибка при запуске БД: {e}")
+        print(f"Ошибка при запуске БД: {e}")
         return False
 
 
 def stop_test_db():
     """Останавливает тестовую базу данных"""
-    print("🛑 Остановка тестовой базы данных...")
+    print("Остановка тестовой базы данных...")
     try:
         _ = subprocess.run(
             ["docker-compose", "-f", "docker-compose.test.yml", "down", "-v"],
@@ -90,10 +120,10 @@ def stop_test_db():
             capture_output=True,
             text=True,
         )
-        print("✅ Тестовая база данных остановлена")
+        print("Тестовая база данных остановлена")
         return True
     except subprocess.CalledProcessError as e:
-        print(f"❌ Ошибка при остановке БД: {e}")
+        print(f"Ошибка при остановке БД: {e}")
         return False
 
 
@@ -102,7 +132,15 @@ if __name__ == "__main__":
         print("Использование:")
         print(
             "  python scripts/test_runner.py test           "
-            "- запустить тесты"
+            "- запустить все тесты"
+        )
+        print(
+            "  python scripts/test_runner.py auth           "
+            "- запустить тесты аутентификации"
+        )
+        print(
+            "  python scripts/test_runner.py vacancies      "
+            "- запустить тесты вакансий"
         )
         print(
             "  python scripts/test_runner.py coverage       "
@@ -130,6 +168,10 @@ if __name__ == "__main__":
 
     if command == "test":
         run_tests()
+    elif command == "auth":
+        run_auth_tests()
+    elif command == "vacancies":
+        run_vacancy_tests()
     elif command == "coverage":
         run_tests_with_coverage()
     elif command == "db-status":
@@ -146,5 +188,5 @@ if __name__ == "__main__":
                 # Всегда останавливаем БД после тестов
                 stop_test_db()
     else:
-        print(f"❌ Неизвестная команда: {command}")
+        print(f"Неизвестная команда: {command}")
         sys.exit(1)

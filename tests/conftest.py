@@ -11,15 +11,28 @@ from tests.test_settings import test_settings
 
 
 def is_test_db_available():
-    try:
-        from sqlalchemy import text
+    import time
 
-        engine = create_engine(test_settings.database_url)
-        with engine.connect() as conn:
-            conn.execute(text("SELECT 1"))
-        return True
-    except Exception:
-        return False
+    from sqlalchemy import text
+
+    # Пытаемся подключиться несколько раз с задержками
+    for attempt in range(3):
+        try:
+            engine = create_engine(
+                test_settings.database_url, connect_args={"connect_timeout": 5}
+            )
+            with engine.connect() as conn:
+                conn.execute(text("SELECT 1"))
+            return True
+        except Exception:
+            if attempt < 2:  # Не последняя попытка
+                time.sleep(2)  # Ждем 2 секунды перед следующей попыткой
+            else:
+                print(
+                    "Не удалось подключиться "
+                    "к тестовой БД после 3 попыток: {e}"
+                )
+                return False
 
 
 @pytest.fixture(scope="session")
