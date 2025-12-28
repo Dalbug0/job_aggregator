@@ -2,11 +2,12 @@ from fastapi import HTTPException
 from sqlalchemy.orm import Session
 
 from app.models import Vacancy
-from app.schemas.vacancy import VacancyCreate, VacancyUpdate
+from app.schemas import VacancyCreate, VacancyUpdate
 
 
 def create_vacancy(db: Session, vacancy: VacancyCreate) -> Vacancy:
-    # Приводим HttpUrl (Pydantic) к str, чтобы psycopg2/SQLAlchemy могли использовать его в SQL-запросах.
+    # Приводим HttpUrl (Pydantic) к str, чтобы psycopg2/SQLAlchemy
+    # могли использовать его в SQL-запросах.
     # Без этого при передаче HttpUrl напрямую возникнет ошибка:
     # psycopg2.ProgrammingError: can't adapt type 'HttpUrl'
     url_value = str(vacancy.url) if vacancy.url is not None else None

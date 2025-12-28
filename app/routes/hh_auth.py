@@ -1,6 +1,9 @@
+import base64
+import json
+import time
 from urllib.parse import urlencode
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.orm import Session
 from starlette.responses import RedirectResponse
 
@@ -17,8 +20,10 @@ from app.crud.hh_resume import (
     update_resume,
 )
 from app.crud.hh_token import save_hh_token
+from app.crud.user import get_user_by_id
 from app.database import get_db
-from app.schemas.hh_resume import ResumeCreate
+from app.schemas import ResumeCreate, UserRead
+from app.services.auth import get_current_user
 from app.services.hh_auth import get_hh_token
 
 router = APIRouter(prefix="/api/v1/auth", tags=["auth"])
@@ -26,19 +31,57 @@ router = APIRouter(prefix="/api/v1/auth", tags=["auth"])
 
 # Fixed routes first
 @router.get("/hh/login")
-def hh_login():
+def hh_login(user_id: int = Query(..., description="User ID for OAuth state")):
+    state_data = {"user_id": user_id, "timestamp": int(time.time())}
+    state_json = json.dumps(state_data)
+    state = base64.urlsafe_b64encode(state_json.encode()).decode()
+
     params = {
         "response_type": "code",
         "client_id": hh_settings.hh_client_id,
         "redirect_uri": hh_settings.hh_redirect_uri,
+        "state": state,
     }
     url = f"https://hh.ru/oauth/authorize?{urlencode(params)}"
     return RedirectResponse(url)
 
 
 @router.get("/hh/callback")
-def hh_callback(code: str, db: Session = Depends(get_db)):
-    user_id = 1  # TODO: заменить на текущего авторизованного пользователя
+def hh_callback(
+    code: str,
+    state: str = Query(..., description="OAuth state parameter"),
+    db: Session = Depends(get_db),
+):
+    if not state:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="State parameter is required",
+        )
+
+    try:
+        state_json = base64.urlsafe_b64decode(state.encode()).decode()
+        state_data = json.loads(state_json)
+        user_id = state_data["user_id"]
+        timestamp = state_data["timestamp"]
+    except (ValueError, KeyError, json.JSONDecodeError):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Invalid state parameter",
+        )
+
+    current_time = int(time.time())
+    if current_time - timestamp > 300:  # 5 minutes
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="State parameter expired",
+        )
+
+    user = get_user_by_id(db, user_id)
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="User not found"
+        )
+
     save_hh_token(db, user_id, code)
     return {"status": "ok"}
 
@@ -61,28 +104,30 @@ def create_resume_endpoint(
 
 @router.get("/hh/resumes/active")
 def get_active_resume_endpoint(
+    current_user: UserRead = Depends(get_current_user),
     db: Session = Depends(get_db),
-    user_id: int = 1,
     access_token: str = Depends(get_hh_token),
 ):
-    return get_active_resume(db, user_id, access_token)
+    return get_active_resume(db, current_user.id, access_token)
 
 
 @router.get("/hh/resumes/active/vacancies")
 def search_vacancies_by_active_resume_endpoint(
+    current_user: UserRead = Depends(get_current_user),
     db: Session = Depends(get_db),
-    user_id: int = 1,
     access_token: str = Depends(get_hh_token),
 ):
-    return search_vacancies_by_active_resume(db, user_id, access_token)
+    return search_vacancies_by_active_resume(db, current_user.id, access_token)
 
 
 # Then template routes
 @router.post("/hh/resumes/select/{resume_id}")
 def select_resume(
-    resume_id: str, db: Session = Depends(get_db), user_id: int = 1
-):  # Убрать значение по умолчанию для user_id когда закончю шифровку
-    return select_active_resume(db, user_id, resume_id)
+    resume_id: str,
+    current_user: UserRead = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    return select_active_resume(db, current_user.id, resume_id)
 
 
 @router.post("/hh/resumes/{resume_id}/publish")
