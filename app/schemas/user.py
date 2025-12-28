@@ -28,5 +28,6 @@ class UserRegisterSchema(UserBase):
     password: constr(min_length=8, max_length=128)
 
 
-class LoginSchema(UserRegisterSchema):
-    pass
+class LoginSchema(BaseModel):
+    email: EmailStr
+    password: str
