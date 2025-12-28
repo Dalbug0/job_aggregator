@@ -11,6 +11,7 @@ jobs:
     env:
           DATABASE_URL: postgresql+psycopg2://postgres:postgres@localhost:5432/job_db
           PYTHONPATH: ${{ github.workspace }}
+          SECRET_KEY: test_secret_key_for_alembic_check
           HH_CLIENT_ID: dummy
           HH_CLIENT_SECRET: dummy
           HH_REDIRECT_URI: http://localhost:8000/api/v1/auth/hh/callback
@@ -51,34 +52,56 @@ jobs:
           alembic check
   test:
     runs-on: ubuntu-latest
-    services:
-      postgres:
-        image: postgres:15
-        env:
-          POSTGRES_USER: postgres
-          POSTGRES_PASSWORD: postgres
-          POSTGRES_DB: job_db
-        ports:
-          - 5432:5432
-      postgres_test:
-        image: postgres:15
-        env:
-          POSTGRES_USER: test_user
-          POSTGRES_PASSWORD: test_pass
-          POSTGRES_DB: job_aggregator_test
-        ports:
-          - 5433:5432
-        options: >-
-          --health-cmd="pg_isready -U test_user -d job_aggregator_test"
-          --health-interval=10s
-          --health-timeout=5s
-          --health-retries=5
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
         with:
           python-version: "3.11"
-      - run: pip install -r requirements.txt
+
+      - name: Install dependencies
+        run: |
+          pip install -r requirements.txt
+
+      - name: Create .env.dev file
+        run: |
+          cat > .env.dev << EOF
+          POSTGRES_USER=test_user
+          POSTGRES_PASSWORD=test_pass
+          POSTGRES_DB=job_aggregator_test
+          POSTGRES_HOST=localhost
+          POSTGRES_PORT=5433
+          SECRET_KEY=test_secret_key
+          DISABLE_SCHEDULER=1
+          HH_CLIENT_ID=dummy
+          HH_CLIENT_SECRET=dummy
+          HH_REDIRECT_URI=http://localhost:8000/api/v1/auth/hh/callback
+          EOF
+
+      - name: Start test services with docker-compose
+        run: |
+          docker-compose -f docker-compose.test.yml up -d
+
+      - name: Wait for test database to be ready
+        run: |
+          for i in {1..30}; do
+            if docker-compose -f docker-compose.test.yml exec -T test_db pg_isready -U test_user -d job_aggregator_test; then
+              echo "Test database is ready"
+              break
+            fi
+            echo "Waiting for test database... ($i/30)"
+            sleep 2
+          done
+          if [ $i -eq 30 ]; then
+            echo "Test database failed to start"
+            exit 1
+          fi
+
+      - name: Run Alembic upgrade on test database
+        run: |
+          alembic upgrade head
+
       - name: Run tests
         env:
           PYTHONPATH: ${{ github.workspace }}
@@ -87,8 +110,14 @@ jobs:
           POSTGRES_DB: job_aggregator_test
           POSTGRES_HOST: localhost
           POSTGRES_PORT: 5433
+          SECRET_KEY: test_secret_key
           DISABLE_SCHEDULER: "1"
           HH_CLIENT_ID: dummy
           HH_CLIENT_SECRET: dummy
           HH_REDIRECT_URI: http://localhost:8000/api/v1/auth/hh/callback
         run: pytest --cov=app --cov-report=term-missing
+
+      - name: Stop test services
+        if: always()
+        run: |
+          docker-compose -f docker-compose.test.yml down -v
