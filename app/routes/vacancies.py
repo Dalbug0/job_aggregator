@@ -11,7 +11,7 @@ from app.crud.vacancy import (
     update_vacancy,
 )
 from app.database import get_db
-from app.schemas.vacancy import (
+from app.schemas import (
     VacancyCreate,
     VacancyDelete,
     VacancyRead,

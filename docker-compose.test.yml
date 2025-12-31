@@ -19,5 +19,18 @@ services:
       start_period: 10s
       timeout: 3s
 
+  test_api:
+    build: .
+    container_name: job_test_api
+    restart: unless-stopped
+    env_file: .env.dev
+    ports:
+      - "8000:8000"
+    depends_on:
+      test_db:
+        condition: service_healthy
+    volumes:
+      - ./migrations:/app/migrations
+      - .:/app
 volumes:
   test_postgres_data:

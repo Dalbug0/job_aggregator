@@ -1,9 +1,9 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
-from app.crud.user import create_user, get_user_by_id
+from app.crud.user import create_user, delete_user, get_user_by_id
 from app.database import get_db
-from app.schemas.user import UserCreate, UserRead
+from app.schemas import UserCreate, UserRead
 
 router = APIRouter(prefix="/users", tags=["users"])
 
@@ -28,3 +28,16 @@ def get_user(
             status_code=status.HTTP_404_NOT_FOUND, detail="User not found"
         )
     return UserRead.model_validate(db_user)
+
+
+@router.delete("/{user_id}")
+def del_user(
+    user_id: int,
+    db: Session = Depends(get_db),
+) -> dict:
+    deleted = delete_user(db, user_id)
+    if not deleted:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="User not found"
+        )
+    return {"message": "User deleted successfully"}

@@ -1,6 +1,7 @@
 # app/config.py
 import os
 
+from pydantic import ConfigDict
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -14,6 +15,7 @@ class Settings(BaseSettings):
     POSTGRES_DB: str = "job_aggregator"
     POSTGRES_PORT: int = 5432
     POSTGRES_HOST: str = "db"
+    SECRET_KEY: str
 
     log_level: str = "INFO"
 
@@ -26,12 +28,11 @@ class Settings(BaseSettings):
             f"@{self.POSTGRES_HOST}:{self.POSTGRES_PORT}/{self.POSTGRES_DB}"
         )
 
-    # Choose env file based on APP_ENV (dev/prod), default to .env.dev for local
+    # Choose env file based on APP_ENV (dev/prod),
+    # default to .env.dev for local
     _env = os.getenv("APP_ENV", "dev")
     _env_file = ".env.prod" if _env == "prod" else ".env.dev"
-    model_config = SettingsConfigDict(
-        env_file=_env_file, env_file_encoding="utf-8"
-    )
+    model_config = ConfigDict(extra="ignore")
 
 
 class HHSettings(BaseSettings):
