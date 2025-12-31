@@ -1,6 +1,7 @@
 # app/config.py
 import os
 
+from pydantic import ConfigDict
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -31,9 +32,7 @@ class Settings(BaseSettings):
     # default to .env.dev for local
     _env = os.getenv("APP_ENV", "dev")
     _env_file = ".env.prod" if _env == "prod" else ".env.dev"
-    model_config = SettingsConfigDict(
-        env_file=_env_file, env_file_encoding="utf-8"
-    )
+    model_config = ConfigDict(extra="ignore")
 
 
 class HHSettings(BaseSettings):
