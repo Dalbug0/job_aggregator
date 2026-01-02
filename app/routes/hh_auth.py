@@ -25,6 +25,7 @@ from app.database import get_db
 from app.schemas import ResumeCreate, UserRead
 from app.services.auth import get_current_user
 from app.services.hh_auth import get_hh_token
+from app.models.hh_token import HHToken
 
 router = APIRouter(prefix="/api/v1/auth", tags=["auth"])
 
@@ -86,18 +87,34 @@ def hh_callback(
     return {"status": "ok"}
 
 
-@router.get("/hh/resumes")
-def get_resumes_endpoint(
-    current_user: UserRead = Depends(get_current_user),
-    access_token: str = Depends(get_hh_token)
+@router.get("/hh/token/{user_id}")
+def get_hh_token_status(
+    user_id: int,
+    db: Session = Depends(get_db)
 ):
+
+    token = db.query(HHToken).filter_by(user_id=user_id).first()
+    if not token:
+        return {"status": "not_found", "user_id": user_id}
+
+    return {
+        "status": "found",
+        "user_id": user_id,
+        "created_at": token.created_at,
+        "expires_in": token.expires_in,
+        "has_access_token": token.access_token is not None,
+        "has_refresh_token": token.refresh_token is not None
+    }
+
+
+@router.get("/hh/resumes")
+def get_resumes_endpoint(access_token: str = Depends(get_hh_token)):
     return get_resumes(access_token)
 
 
 @router.post("/hh/resumes/create_resume")
 def create_resume_endpoint(
     payload: ResumeCreate,
-    current_user: UserRead = Depends(get_current_user),
     access_token: str = Depends(get_hh_token)
 ):
     return create_resume(payload, access_token)
@@ -138,7 +155,6 @@ def select_resume(
 @router.post("/hh/resumes/{resume_id}/publish")
 def publish_resume_endpoint(
     resume_id: str,
-    current_user: UserRead = Depends(get_current_user),
     access_token: str = Depends(get_hh_token)
 ):
     return publish_resume(resume_id, access_token)
@@ -147,7 +163,6 @@ def publish_resume_endpoint(
 @router.get("/hh/resumes/{resume_id}/vacancies")
 def search_vacancies_by_resume_endpoint(
     resume_id: str,
-    current_user: UserRead = Depends(get_current_user),
     access_token: str = Depends(get_hh_token)
 ):
     return search_vacancies_by_resume(resume_id, access_token)
@@ -157,7 +172,6 @@ def search_vacancies_by_resume_endpoint(
 def update_resume_endpoint(
     resume_id: str,
     payload: dict,
-    current_user: UserRead = Depends(get_current_user),
     access_token: str = Depends(get_hh_token)
 ):
     return update_resume(resume_id, payload, access_token)
@@ -166,7 +180,6 @@ def update_resume_endpoint(
 @router.delete("/hh/resumes/{resume_id}")
 def delete_resume_endpoint(
     resume_id: str,
-    current_user: UserRead = Depends(get_current_user),
     access_token: str = Depends(get_hh_token)
 ):
     return delete_resume(resume_id, access_token)
