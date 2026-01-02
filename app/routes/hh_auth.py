@@ -87,13 +87,18 @@ def hh_callback(
 
 
 @router.get("/hh/resumes")
-def get_resumes_endpoint(access_token: str = Depends(get_hh_token)):
+def get_resumes_endpoint(
+    current_user: UserRead = Depends(get_current_user),
+    access_token: str = Depends(get_hh_token)
+):
     return get_resumes(access_token)
 
 
 @router.post("/hh/resumes/create_resume")
 def create_resume_endpoint(
-    payload: ResumeCreate, access_token: str = Depends(get_hh_token)
+    payload: ResumeCreate,
+    current_user: UserRead = Depends(get_current_user),
+    access_token: str = Depends(get_hh_token)
 ):
     return create_resume(payload, access_token)
     # TODO
@@ -132,27 +137,36 @@ def select_resume(
 
 @router.post("/hh/resumes/{resume_id}/publish")
 def publish_resume_endpoint(
-    resume_id: str, access_token: str = Depends(get_hh_token)
+    resume_id: str,
+    current_user: UserRead = Depends(get_current_user),
+    access_token: str = Depends(get_hh_token)
 ):
     return publish_resume(resume_id, access_token)
 
 
 @router.get("/hh/resumes/{resume_id}/vacancies")
 def search_vacancies_by_resume_endpoint(
-    resume_id: str, access_token: str = Depends(get_hh_token)
+    resume_id: str,
+    current_user: UserRead = Depends(get_current_user),
+    access_token: str = Depends(get_hh_token)
 ):
     return search_vacancies_by_resume(resume_id, access_token)
 
 
 @router.put("/hh/resumes/{resume_id}")
 def update_resume_endpoint(
-    resume_id: str, payload: dict, access_token: str = Depends(get_hh_token)
+    resume_id: str,
+    payload: dict,
+    current_user: UserRead = Depends(get_current_user),
+    access_token: str = Depends(get_hh_token)
 ):
     return update_resume(resume_id, payload, access_token)
 
 
 @router.delete("/hh/resumes/{resume_id}")
 def delete_resume_endpoint(
-    resume_id: str, access_token: str = Depends(get_hh_token)
+    resume_id: str,
+    current_user: UserRead = Depends(get_current_user),
+    access_token: str = Depends(get_hh_token)
 ):
     return delete_resume(resume_id, access_token)

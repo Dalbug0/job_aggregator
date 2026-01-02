@@ -13,6 +13,7 @@ from app.exceptions import generic_exception_handler, http_exception_handler
 from app.logger import logger
 from app.routes import auth, hh_auth, users, vacancies
 from app.scheduler import fin_scheduler, start_scheduler
+from app.services.auth import security
 
 
 def run_migrations():
@@ -50,6 +51,8 @@ async def lifespan(app: FastAPI):
         fin_scheduler()
     print("Приложение остановленно.")
 
+
+from fastapi.security import HTTPBearer
 
 app = FastAPI(
     title="Vacancies API",

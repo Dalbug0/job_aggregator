@@ -4,6 +4,7 @@ from sqlalchemy.orm import Session
 from app.crud.user import create_user, delete_user, get_user_by_id
 from app.database import get_db
 from app.schemas import UserCreate, UserRead
+from app.services.auth import get_current_user
 
 router = APIRouter(prefix="/users", tags=["users"])
 
@@ -15,6 +16,11 @@ def register_user(
 ) -> UserRead:
     db_user = create_user(db, user)
     return UserRead.model_validate(db_user)
+
+
+@router.get("/current")
+def get_current_user_info(current_user: UserRead = Depends(get_current_user)):
+    return current_user
 
 
 @router.get("/{user_id}", response_model=UserRead)

@@ -102,10 +102,12 @@ def get_current_user(
     try:
         payload = verify_token(token)
         user_id = int(payload.get("sub"))
-    except Exception:
+    except Exception as e:
+        logger.error(f"Token verification failed: {e}")
         raise HTTPException(status_code=401, detail="Invalid token")
 
     user = db.query(User).get(user_id)
     if not user:
+        logger.error(f"User not found: {user_id}")
         raise HTTPException(status_code=404, detail="User not found")
     return UserRead.model_validate(user)
