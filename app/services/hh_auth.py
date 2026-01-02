@@ -7,6 +7,8 @@ from sqlalchemy.orm import Session
 from app.config import hh_settings
 from app.database import get_db
 from app.models.hh_token import HHToken
+from app.schemas import UserRead
+from app.services.auth import get_current_user
 
 
 def exchange_code_for_token(code: str) -> dict:
@@ -60,14 +62,14 @@ def expired(token_info: HHToken) -> bool:
     return time.time() > expire_timestamp
 
 
-def get_hh_token(user_id: int = 1, db: Session = Depends(get_db)):
-    token = db.query(HHToken).filter_by(user_id=user_id).first()
+def get_hh_token(current_user: UserRead = Depends(get_current_user), db: Session = Depends(get_db)):
+    token = db.query(HHToken).filter_by(user_id=current_user.id).first()
     if not token:
         raise HTTPException(
             status_code=401, detail="hh.ru account not connected"
         )
 
     if expired(token):
-        token = refresh_hh_token(user_id, db)
+        token = refresh_hh_token(current_user.id, db)
 
     return token.access_token

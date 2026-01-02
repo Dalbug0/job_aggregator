@@ -3,6 +3,8 @@
 import os
 from contextlib import asynccontextmanager
 
+from alembic import command
+from alembic.config import Config
 from fastapi import FastAPI, HTTPException
 from fastapi.responses import JSONResponse
 
@@ -11,11 +13,33 @@ from app.exceptions import generic_exception_handler, http_exception_handler
 from app.logger import logger
 from app.routes import auth, hh_auth, users, vacancies
 from app.scheduler import fin_scheduler, start_scheduler
+from app.services.auth import security
+
+
+def run_migrations():
+    """Run database migrations automatically on startup."""
+    try:
+        logger.info("🔄 Running database migrations...")
+        # Get the directory of the current file (main.py is in app/)
+        # alembic.ini is in the project root, so we go up one level
+        import os
+        project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+        alembic_cfg = Config(os.path.join(project_root, "alembic.ini"))
+
+        # Run migrations
+        command.upgrade(alembic_cfg, "head")
+        logger.info("✅ Database migrations completed successfully")
+    except Exception as e:
+        logger.error(f"❌ Failed to run migrations: {e}")
+        raise
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     logger.info("Job Aggregator API started")
+
+    # Run database migrations
+    run_migrations()
 
     logger.info("✅ Приложение готово")
 
@@ -27,6 +51,8 @@ async def lifespan(app: FastAPI):
         fin_scheduler()
     print("Приложение остановленно.")
 
+
+from fastapi.security import HTTPBearer
 
 app = FastAPI(
     title="Vacancies API",
