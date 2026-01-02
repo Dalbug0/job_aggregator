@@ -47,6 +47,23 @@ def hh_login(user_id: int = Query(..., description="User ID for OAuth state")):
     return RedirectResponse(url)
 
 
+@router.get("/hh/login_url")
+def get_hh_login_url(user_id: int = Query(..., description="User ID for OAuth state")):
+    """Get HH.ru authorization URL without redirect (for bots and API clients)"""
+    state_data = {"user_id": user_id, "timestamp": int(time.time())}
+    state_json = json.dumps(state_data)
+    state = base64.urlsafe_b64encode(state_json.encode()).decode()
+
+    params = {
+        "response_type": "code",
+        "client_id": hh_settings.hh_client_id,
+        "redirect_uri": hh_settings.hh_redirect_uri,
+        "state": state,
+    }
+    url = f"https://hh.ru/oauth/authorize?{urlencode(params)}"
+    return {"login_url": url}
+
+
 @router.get("/hh/callback")
 def hh_callback(
     code: str,
@@ -84,7 +101,7 @@ def hh_callback(
         )
 
     save_hh_token(db, user_id, code)
-    return {"status": "ok"}
+    return {"status": "ok", "message": "HH.ru token saved successfully"}
 
 
 @router.get("/hh/token/{user_id}")
