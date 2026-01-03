@@ -77,6 +77,29 @@ def get_telegram_user(
     return TelegramUserRead.model_validate(telegram_user)
 
 
+@router.get("/telegram/user/{user_id}", response_model=TelegramUserRead)
+def get_telegram_user_by_user_id(
+    user_id: int,
+    db: Session = Depends(get_db),
+) -> TelegramUserRead:
+    """Получить Telegram пользователя по user_id"""
+    # Сначала получаем пользователя по user_id
+    user = get_user_by_id(db, user_id)
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="User not found"
+        )
+
+    # Проверяем, является ли пользователь TelegramUser
+    from app.models import TelegramUser
+    if not isinstance(user, TelegramUser):
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="User is not a Telegram user"
+        )
+
+    return TelegramUserRead.model_validate(user)
+
+
 @router.post("/telegram/", response_model=TelegramUserRead, status_code=status.HTTP_201_CREATED)
 def register_telegram_user(
     telegram_user: TelegramUserRegisterSchema,
