@@ -2,6 +2,8 @@ from argon2 import PasswordHasher
 from fastapi import HTTPException, status
 from sqlalchemy.orm import Session
 
+from app.exceptions import TelegramUserAlreadyExists, TelegramUserNotFound
+from app.logger import logger
 from app.models import User, UserAuth, TelegramUser
 from app.schemas import UserCreate, UserRegisterSchema
 from app.schemas.user import TelegramUserRegisterSchema
@@ -82,11 +84,10 @@ def get_telegram_user_by_telegram_id(db: Session, telegram_id: int) -> TelegramU
 def create_telegram_user(db: Session, telegram_user: TelegramUserRegisterSchema) -> TelegramUser:
     # Проверяем, не существует ли уже пользователь с таким telegram_id
     existing_telegram_user = get_telegram_user_by_telegram_id(db, telegram_user.telegram_id)
+    logger.debug(f"Checking telegram_id {telegram_user.telegram_id}, found: {existing_telegram_user is not None}")
     if existing_telegram_user:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="User with this telegram_id already exists",
-        )
+        logger.warning(f"Raising TelegramUserAlreadyExists for telegram_id {telegram_user.telegram_id}")
+        raise TelegramUserAlreadyExists(telegram_user.telegram_id)
 
     # Генерируем уникальный username на основе telegram_id
     username = f"telegram_{telegram_user.telegram_id}"
