@@ -31,3 +31,14 @@ class UserRegisterSchema(UserBase):
 class LoginSchema(BaseModel):
     email: EmailStr
     password: str
+
+
+class TelegramUserRegisterSchema(BaseModel):
+    telegram_id: int
+    telegram_username: Optional[str] = None
+    first_name: Optional[str] = None
+    last_name: Optional[str] = None
+
+    model_config = ConfigDict(
+        from_attributes=True
+    )  # для работы с SQLAlchemy моделей
