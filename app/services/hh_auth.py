@@ -8,7 +8,7 @@ from app.config import hh_settings
 from app.database import get_db
 from app.models.hh_token import HHToken
 from app.schemas import UserRead
-from app.services.auth import get_current_user
+from app.services.auth import get_current_user_or_telegram
 
 
 def exchange_code_for_token(code: str) -> dict:
@@ -62,9 +62,12 @@ def expired(token_info: HHToken) -> bool:
     return time.time() > expire_timestamp
 
 
-def get_hh_token(current_user: UserRead = Depends(get_current_user), db: Session = Depends(get_db)):
+def get_hh_token(current_user: UserRead = Depends(get_current_user_or_telegram), db: Session = Depends(get_db)):
+    logger.debug(f"get_hh_token called for user: {current_user.id} (username: {current_user.username})")
+
     token = db.query(HHToken).filter_by(user_id=current_user.id).first()
     if not token:
+        logger.error(f"No HH token found for user {current_user.id}")
         raise HTTPException(
             status_code=401, detail="hh.ru account not connected"
         )

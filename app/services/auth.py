@@ -122,6 +122,8 @@ def get_current_user_or_telegram(
     """Получить текущего пользователя по JWT токену или Telegram user_id"""
     token = credentials.credentials if credentials else None
 
+    logger.debug(f"get_current_user_or_telegram called with token={bool(token)}, user_id={user_id}")
+
     # Сначала пробуем JWT токен (для email пользователей)
     if token:
         try:
@@ -129,20 +131,26 @@ def get_current_user_or_telegram(
             user_id_from_token = int(payload.get("sub"))
             user = db.query(User).get(user_id_from_token)
             if user:
+                logger.info(f"Found user by JWT token: {user.id}")
                 return UserRead.model_validate(user)
-        except Exception:
-            pass  # JWT невалидный, пробуем Telegram
+        except Exception as e:
+            logger.warning(f"JWT token invalid: {e}")
 
     # Если JWT не сработал или отсутствует, пробуем Telegram user_id из заголовка
     if user_id:
         try:
+            logger.info(f"Trying to find Telegram user with telegram_id: {user_id}")
             from app.crud.user import get_telegram_user_by_telegram_id
             telegram_user = get_telegram_user_by_telegram_id(db, int(user_id))
             if telegram_user:
+                logger.info(f"Found Telegram user: {telegram_user.id} (telegram_id: {telegram_user.telegram_id})")
                 return UserRead.model_validate(telegram_user)
-        except (ValueError, TypeError):
-            pass
+            else:
+                logger.warning(f"Telegram user not found for telegram_id: {user_id}")
+        except (ValueError, TypeError) as e:
+            logger.error(f"Error parsing user_id {user_id}: {e}")
 
+    logger.error("Could not validate credentials")
     raise HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
         detail="Could not validate credentials",

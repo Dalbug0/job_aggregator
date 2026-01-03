@@ -8,7 +8,7 @@ from alembic.config import Config
 from fastapi import FastAPI, HTTPException
 from fastapi.responses import JSONResponse
 
-from app.database import check_connection
+from app.database import check_connection, engine
 from app.exceptions import generic_exception_handler, http_exception_handler, telegram_user_exception_handler, TelegramUserAlreadyExists, TelegramUserNotFound
 from app.logger import logger
 from app.routes import auth, hh_auth, users, vacancies
@@ -41,7 +41,6 @@ def run_migrations():
 
         # Get current revision from database
         from alembic.migration import MigrationContext
-        engine = check_connection()
 
         try:
             with engine.connect() as conn:
