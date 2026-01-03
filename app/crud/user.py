@@ -2,8 +2,9 @@ from argon2 import PasswordHasher
 from fastapi import HTTPException, status
 from sqlalchemy.orm import Session
 
-from app.models import User, UserAuth
+from app.models import User, UserAuth, TelegramUser
 from app.schemas import UserCreate, UserRegisterSchema
+from app.schemas.user import TelegramUserRegisterSchema
 
 ph = PasswordHasher()
 
@@ -72,6 +73,45 @@ def authenticate_user(db: Session, email: str, password: str) -> User | None:
         return user_auth.user
     except Exception:
         return None
+
+
+def get_telegram_user_by_telegram_id(db: Session, telegram_id: int) -> TelegramUser | None:
+    return db.query(TelegramUser).filter(TelegramUser.telegram_id == telegram_id).first()
+
+
+def create_telegram_user(db: Session, telegram_user: TelegramUserRegisterSchema) -> TelegramUser:
+    # Проверяем, не существует ли уже пользователь с таким telegram_id
+    existing_telegram_user = get_telegram_user_by_telegram_id(db, telegram_user.telegram_id)
+    if existing_telegram_user:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="User with this telegram_id already exists",
+        )
+
+    # Генерируем уникальный username на основе telegram_id
+    username = f"telegram_{telegram_user.telegram_id}"
+
+    # Проверяем, не занят ли username
+    existing_user = get_user_by_username(db, username)
+    if existing_user:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Generated username already exists",
+        )
+
+    # Создаем TelegramUser
+    db_telegram_user = TelegramUser(
+        username=username,
+        telegram_id=telegram_user.telegram_id,
+        telegram_username=telegram_user.telegram_username,
+        first_name=telegram_user.first_name,
+        last_name=telegram_user.last_name,
+    )
+
+    db.add(db_telegram_user)
+    db.commit()
+    db.refresh(db_telegram_user)
+    return db_telegram_user
 
 
 def delete_user(db: Session, user_id: int) -> bool:
