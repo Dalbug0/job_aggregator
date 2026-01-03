@@ -1,9 +1,10 @@
 import datetime
 
-from fastapi import Depends, HTTPException, Security, status
+from fastapi import Depends, HTTPException, Security, status, Header
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from jose import JWTError, jwt
 from sqlalchemy.orm import Session
+from typing import Optional
 
 from app.config import settings
 from app.crud.auth import (
@@ -111,3 +112,39 @@ def get_current_user(
         logger.error(f"User not found: {user_id}")
         raise HTTPException(status_code=404, detail="User not found")
     return UserRead.model_validate(user)
+
+
+def get_current_user_or_telegram(
+    credentials: Optional[HTTPAuthorizationCredentials] = Security(security),
+    user_id: Optional[str] = Header(None, alias="X-User-ID"),
+    db: Session = Depends(get_db)
+) -> UserRead:
+    """Получить текущего пользователя по JWT токену или Telegram user_id"""
+    token = credentials.credentials if credentials else None
+
+    # Сначала пробуем JWT токен (для email пользователей)
+    if token:
+        try:
+            payload = verify_token(token)
+            user_id_from_token = int(payload.get("sub"))
+            user = db.query(User).get(user_id_from_token)
+            if user:
+                return UserRead.model_validate(user)
+        except Exception:
+            pass  # JWT невалидный, пробуем Telegram
+
+    # Если JWT не сработал или отсутствует, пробуем Telegram user_id из заголовка
+    if user_id:
+        try:
+            from app.crud.user import get_telegram_user_by_telegram_id
+            telegram_user = get_telegram_user_by_telegram_id(db, int(user_id))
+            if telegram_user:
+                return UserRead.model_validate(telegram_user)
+        except (ValueError, TypeError):
+            pass
+
+    raise HTTPException(
+        status_code=status.HTTP_401_UNAUTHORIZED,
+        detail="Could not validate credentials",
+        headers={"WWW-Authenticate": "Bearer"},
+    )
