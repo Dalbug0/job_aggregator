@@ -15,14 +15,18 @@ class UserCreate(UserBase):
     pass
 
 
-class UserRead(UserBase):
+class UserReadBase(BaseModel):
     id: int
+    username: str
     created_at: datetime
     active_resume_id: Optional[str] = None
 
     model_config = ConfigDict(
         from_attributes=True
-    )  # для работы с SQLAlchemy моделей
+    )
+
+class UserRead(UserReadBase):
+    email: Optional[EmailStr] = None
 
 
 class UserRegisterSchema(UserBase):
@@ -34,19 +38,11 @@ class LoginSchema(BaseModel):
     password: str
 
 
-class TelegramUserRead(BaseModel):
-    id: int
-    username: str
+class TelegramUserRead(UserReadBase):
     telegram_id: int
     telegram_username: Optional[str] = None
     first_name: Optional[str] = None
     last_name: Optional[str] = None
-    created_at: datetime
-    active_resume_id: Optional[str] = None
-
-    model_config = ConfigDict(
-        from_attributes=True
-    )
 
 
 class TelegramUserRegisterSchema(BaseModel):
