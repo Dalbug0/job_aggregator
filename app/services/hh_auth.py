@@ -6,6 +6,7 @@ from sqlalchemy.orm import Session
 
 from app.config import hh_settings
 from app.database import get_db
+from app.logger import logger
 from app.models.hh_token import HHToken
 from app.schemas import UserRead
 from app.services.auth import get_current_user_or_telegram

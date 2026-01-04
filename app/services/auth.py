@@ -1,10 +1,11 @@
 import datetime
 
-from fastapi import Depends, HTTPException, Security, status, Header
+from fastapi import Depends, HTTPException, Request, Security, status, Header
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from jose import JWTError, jwt
 from sqlalchemy.orm import Session
 from typing import Optional
+
 
 from app.config import settings
 from app.crud.auth import (
@@ -115,12 +116,16 @@ def get_current_user(
 
 
 def get_current_user_or_telegram(
-    credentials: Optional[HTTPAuthorizationCredentials] = Security(security),
+    request: Request,
     user_id: Optional[str] = Header(None, alias="X-User-ID"),
     db: Session = Depends(get_db)
 ) -> UserRead:
     """Получить текущего пользователя по JWT токену или Telegram user_id"""
-    token = credentials.credentials if credentials else None
+    # Извлекаем токен из Authorization header вручную
+    auth_header = request.headers.get("authorization")
+    token = None
+    if auth_header and auth_header.startswith("Bearer "):
+        token = auth_header[7:]  # Убираем "Bearer "
 
     logger.debug(f"get_current_user_or_telegram called with token={bool(token)}, user_id={user_id}")
 
@@ -144,7 +149,12 @@ def get_current_user_or_telegram(
             telegram_user = get_telegram_user_by_telegram_id(db, int(user_id))
             if telegram_user:
                 logger.info(f"Found Telegram user: {telegram_user.id} (telegram_id: {telegram_user.telegram_id})")
-                return UserRead.model_validate(telegram_user)
+                return UserRead(
+                    id=telegram_user.id,
+                    username=telegram_user.username,
+                    created_at=telegram_user.created_at,
+                    active_resume_id=telegram_user.active_resume_id
+                )
             else:
                 logger.warning(f"Telegram user not found for telegram_id: {user_id}")
         except (ValueError, TypeError) as e:
