@@ -82,6 +82,15 @@ def handle_hh_response(
     )
 
 
+def get_current_user_info(access_token: str) -> dict:
+    response = hh_request(
+        method="GET",
+        url="https://api.hh.ru/me",
+        token=access_token,
+    )
+    return handle_hh_response(response, action="get current user info", return_json=True)
+
+
 def get_resumes(access_token: str) -> dict:
     response = hh_request(
         method="GET",
@@ -131,13 +140,13 @@ def search_vacancies_by_active_resume(
     return search_vacancies_by_resume(user.active_resume_id, access_token)
 
 
-def create_resume(payload: ResumeCreate, access_token: str) -> dict:
-    payload_dict = payload.model_dump(exclude_unset=True)
+def create_resume(payload: dict, access_token: str) -> dict:
+    """Создать резюме на HH.ru"""
     response = hh_request(
         method="POST",
         url="https://api.hh.ru/resume_profile",
         token=access_token,
-        json=payload_dict,
+        json=payload,
     )
     return handle_hh_response(
         response, action="create resume", return_json=True

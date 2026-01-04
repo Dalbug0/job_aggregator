@@ -12,6 +12,7 @@ from app.crud.hh_resume import (
     create_resume,
     delete_resume,
     get_active_resume,
+    get_current_user_info,
     get_resumes,
     publish_resume,
     search_vacancies_by_active_resume,
@@ -124,9 +125,49 @@ def get_hh_token_status(
     }
 
 
+@router.get("/hh/me")
+def get_current_user_info_endpoint(access_token: str = Depends(get_hh_token)):
+    return get_current_user_info(access_token)
+
+
 @router.get("/hh/resumes")
 def get_resumes_endpoint(access_token: str = Depends(get_hh_token)):
     return get_resumes(access_token)
+
+
+@router.post("/hh/resumes/test_create")
+def create_test_resume_endpoint(access_token: str = Depends(get_hh_token)):
+    """Создать тестовое резюме с фиксированными данными"""
+    # Тестовые данные для создания резюме
+    test_resume_data = {
+        "title": "Python разработчик (тестовое резюме)",
+        "area": {
+            "id": "1"  # Москва
+        },
+        "salary": {
+            "amount": 150000,
+            "currency": "RUR"
+        },
+        "employment": {
+            "id": "full"  # Полная занятость
+        },
+        "schedule": {
+            "id": "fullDay"  # Полный день
+        },
+        "experience": {
+            "id": "between1And3"  # 1-3 года
+        },
+        "education_level": {
+            "id": "higher"  # Высшее
+        },
+        "skills": "Python, Django, PostgreSQL, Git",
+        "about": "Опытный Python разработчик с опытом работы в веб-разработке",
+        "contacts": {
+            "email": "test@example.com",
+            "phone": "+7 (999) 123-45-67"
+        }
+    }
+    return create_resume(test_resume_data, access_token)
 
 
 @router.post("/hh/resumes/create_resume")
