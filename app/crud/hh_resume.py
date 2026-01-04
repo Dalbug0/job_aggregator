@@ -7,9 +7,19 @@ from app.schemas import ResumeCreate
 
 
 def hh_request(method: str, url: str, token: str, **kwargs):
-    response = httpx.request(
-        method, url, headers={"Authorization": f"Bearer {token}"}, **kwargs
-    )
+    from app.logger import logger
+    # Согласно документации HH.ru: User-Agent обязателен, рекомендуется указать название приложения и email
+    # Формат: MyApp/1.0 (my-app-feedback@example.com)
+    # Используем название приложения из HH.ru API: "Job Aggregator API"
+    headers = {
+        "Authorization": f"Bearer {token}",
+        "User-Agent": "Job Aggregator API/1.0 (pinsk.m.alibaba@gmail.com)",
+    }
+    # Логируем первые и последние символы токена для диагностики (безопасно)
+    token_preview = f"{token[:10]}...{token[-10:]}" if len(token) > 20 else "***"
+    logger.debug(f"Making HH.ru API request: {method} {url} with token: {token_preview}")
+    response = httpx.request(method, url, headers=headers, **kwargs)
+    logger.debug(f"HH.ru API response status: {response.status_code} for {url}")
     return response
 
 
@@ -23,16 +33,22 @@ def handle_hh_response(
         return {"status": "ok", "message": f"{action.capitalize()} successful"}
 
     if response.status_code == 400:
+        from app.logger import logger
+        error_text = response.text[:500] if response.text else "No response text"
+        logger.error(f"HH.ru API returned 400 for {action}. Response: {error_text}")
         raise HTTPException(
             status_code=400,
             detail=(
                 f"{action.capitalize()} невозможен. "
                 "Ошибка в теле запроса или резюме "
-                "не заполнено."
+                "не заполнено. "
+                f"Details: {error_text}"
             ),
         )
 
     if response.status_code == 403:
+        from app.logger import logger
+        logger.error(f"HH.ru API returned 403 for {action}. Response: {response.text}")
         raise HTTPException(
             status_code=403,
             detail=(
