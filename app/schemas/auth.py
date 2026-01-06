@@ -11,6 +11,12 @@ class UserRegisterResponse(BaseModel):
     user_id: int
 
 
+class TelegramUserRegisterResponse(BaseModel):
+    status: str
+    user_id: int
+    telegram_id: int
+
+
 class RefreshTokenRequest(BaseModel):
     refresh_token: str
 

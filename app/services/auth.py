@@ -1,9 +1,11 @@
 import datetime
 
-from fastapi import Depends, HTTPException, Security, status
+from fastapi import Depends, HTTPException, Request, Security, status, Header
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from jose import JWTError, jwt
 from sqlalchemy.orm import Session
+from typing import Optional
+
 
 from app.config import settings
 from app.crud.auth import (
@@ -111,3 +113,56 @@ def get_current_user(
         logger.error(f"User not found: {user_id}")
         raise HTTPException(status_code=404, detail="User not found")
     return UserRead.model_validate(user)
+
+
+def get_current_user_or_telegram(
+    request: Request,
+    user_id: Optional[str] = Header(None, alias="X-User-ID"),
+    db: Session = Depends(get_db)
+) -> UserRead:
+    """Получить текущего пользователя по JWT токену или Telegram user_id"""
+    # Извлекаем токен из Authorization header вручную
+    auth_header = request.headers.get("authorization")
+    token = None
+    if auth_header and auth_header.startswith("Bearer "):
+        token = auth_header[7:]  # Убираем "Bearer "
+
+    logger.debug(f"get_current_user_or_telegram called with token={bool(token)}, user_id={user_id}")
+
+    # Сначала пробуем JWT токен (для email пользователей)
+    if token:
+        try:
+            payload = verify_token(token)
+            user_id_from_token = int(payload.get("sub"))
+            user = db.query(User).get(user_id_from_token)
+            if user:
+                logger.info(f"Found user by JWT token: {user.id}")
+                return UserRead.model_validate(user)
+        except Exception as e:
+            logger.warning(f"JWT token invalid: {e}")
+
+    # Если JWT не сработал или отсутствует, пробуем Telegram user_id из заголовка
+    if user_id:
+        try:
+            logger.info(f"Trying to find Telegram user with telegram_id: {user_id}")
+            from app.crud.user import get_telegram_user_by_telegram_id
+            telegram_user = get_telegram_user_by_telegram_id(db, int(user_id))
+            if telegram_user:
+                logger.info(f"Found Telegram user: {telegram_user.id} (telegram_id: {telegram_user.telegram_id})")
+                return UserRead(
+                    id=telegram_user.id,
+                    username=telegram_user.username,
+                    created_at=telegram_user.created_at,
+                    active_resume_id=telegram_user.active_resume_id
+                )
+            else:
+                logger.warning(f"Telegram user not found for telegram_id: {user_id}")
+        except (ValueError, TypeError) as e:
+            logger.error(f"Error parsing user_id {user_id}: {e}")
+
+    logger.error("Could not validate credentials")
+    raise HTTPException(
+        status_code=status.HTTP_401_UNAUTHORIZED,
+        detail="Could not validate credentials",
+        headers={"WWW-Authenticate": "Bearer"},
+    )
