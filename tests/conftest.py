@@ -1,4 +1,5 @@
 # tests/conftest.py
+import os
 
 import pytest
 from fastapi.testclient import TestClient
@@ -71,7 +72,25 @@ def client(test_session):
         finally:
             pass
 
+    # Disable scheduler and migrations in tests
+
+    old_scheduler = os.environ.get("DISABLE_SCHEDULER")
+    old_migrations = os.environ.get("DISABLE_MIGRATIONS")
+    os.environ["DISABLE_SCHEDULER"] = "1"
+    os.environ["DISABLE_MIGRATIONS"] = "1"
+
     app.dependency_overrides[get_db] = override_get_db
     with TestClient(app) as test_client:
         yield test_client
     app.dependency_overrides.clear()
+
+    # Restore original values
+    if old_scheduler is not None:
+        os.environ["DISABLE_SCHEDULER"] = old_scheduler
+    else:
+        os.environ.pop("DISABLE_SCHEDULER", None)
+
+    if old_migrations is not None:
+        os.environ["DISABLE_MIGRATIONS"] = old_migrations
+    else:
+        os.environ.pop("DISABLE_MIGRATIONS", None)
