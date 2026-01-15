@@ -89,10 +89,10 @@ def hh_callback(
         )
 
     current_time = int(time.time())
-    if current_time - timestamp > 300:  # 5 minutes
+    if current_time - timestamp > 900:  # 15 minutes
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail="State parameter expired",
+            detail="State parameter expired. Please generate a new login URL.",
         )
 
     user = get_user_by_id(db, user_id)
